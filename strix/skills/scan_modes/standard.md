@@ -1,9 +1,9 @@
 ---
 name: standard
-description: Balanced security assessment with systematic methodology and full attack surface coverage
+description: 适用于常规安全审查的标准扫描策略
 ---
 
-# Standard Testing Mode
+# 标准扫描模式
 
 Balanced security assessment with structured methodology. Thorough coverage without exhaustive depth.
 
@@ -48,7 +48,7 @@ Before testing for vulnerabilities, understand the application:
 
 Test each attack surface methodically. Spawn focused subagents for different areas.
 
-**Input Validation**
+**Input 验证**
 - Injection testing on all input fields (SQL, XSS, command, template)
 - File upload bypass attempts
 - Search and filter parameter manipulation

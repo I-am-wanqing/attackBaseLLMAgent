@@ -1,18 +1,18 @@
 ---
 name: subdomain-takeover
-description: Subdomain takeover testing for dangling DNS records and unclaimed cloud resources
+description: 子域接管安全测试技能
 ---
 
-# Subdomain Takeover
+# 子域接管
 
 Subdomain takeover lets an attacker serve content from a trusted subdomain by claiming resources referenced by dangling DNS (CNAME/A/ALIAS/NS) or mis-bound provider configurations. Consequences include phishing on a trusted origin, cookie and CORS pivot, OAuth redirect abuse, and CDN cache poisoning.
 
-## Attack Surface
+## 攻击面
 
 - Dangling CNAME/A/ALIAS to third-party services (hosting, storage, serverless, CDN)
 - Orphaned NS delegations (child zones with abandoned/expired nameservers)
 - Decommissioned SaaS integrations (support, docs, marketing, forms) referenced via CNAME
-- CDN "alternate domain" mappings (CloudFront/Fastly/Azure CDN) lacking ownership verification
+- CDN "alternate domain" mappings (云端Front/Fastly/Azure CDN) lacking ownership verification
 - Storage and static hosting endpoints (S3/Blob/GCS buckets, GitHub/GitLab Pages)
 
 ## Reconnaissance
@@ -37,13 +37,13 @@ Service-specific unclaimed messages (examples):
 - **Fastly**: "Fastly error: unknown domain"
 - **Heroku**: "No such app" or "There's nothing here, yet."
 - **S3 static site**: "NoSuchBucket" / "The specified bucket does not exist"
-- **CloudFront**: 403/400 with "The request could not be satisfied"
+- **云端Front**: 403/400 with "The request could not be satisfied"
 - **Azure App Service**: default 404 for azurewebsites.net unless custom-domain verified
 - **Shopify**: "Sorry, this shop is currently unavailable"
 
 TLS clues: certificate CN/SAN referencing provider default host instead of the custom subdomain
 
-## Key Vulnerabilities
+## 关键漏洞
 
 ### Claim Third-Party Resource
 
@@ -92,7 +92,7 @@ TLS clues: certificate CN/SAN referencing provider default host instead of the c
 - Wildcard CNAMEs to providers may expose unbounded subdomains
 - Fallback origins: CDNs configured with multiple origins may expose unknown-domain responses
 
-## Special Contexts
+## 特殊场景
 
 ### Storage and Static
 
@@ -106,7 +106,7 @@ TLS clues: certificate CN/SAN referencing provider default host instead of the c
 
 ### CDN and Edge
 
-- CloudFront/Fastly/Azure CDN/Akamai: alternate domain verification differs
+- 云端Front/Fastly/Azure CDN/Akamai: alternate domain verification differs
 - Some products historically allowed alt-domain claims without proof
 
 ### DNS Delegations
@@ -114,7 +114,7 @@ TLS clues: certificate CN/SAN referencing provider default host instead of the c
 - Child-zone NS delegations outrank parent records
 - Control of delegated NS yields full control of all hosts below that label
 
-## Testing Methodology
+## 测试方法
 
 1. **Enumerate subdomains** - Aggregate CT logs, passive DNS, and org inventory
 2. **Resolve DNS** - All RR types: A/AAAA, CNAME, NS, MX, TXT; keep CNAME chains
@@ -123,27 +123,27 @@ TLS clues: certificate CN/SAN referencing provider default host instead of the c
 5. **Attempt claim** (with authorization) - Create missing resource with exact required name
 6. **Validate control** - Serve minimal unique payload; confirm over HTTPS
 
-## Validation
+## 验证
 
 1. Before: record DNS chain, HTTP response (status/body length/fingerprint), and TLS details
 2. After claim: serve unique content and verify over HTTPS at the target subdomain
 3. Optional: issue a DV certificate (legal scope) and reference CT entry as evidence
 4. Demonstrate impact chains (CSP/script-src trust, OAuth redirect acceptance, cookie Domain scoping)
 
-## False Positives
+## 误报
 
 - "Unknown domain" pages that are not claimable due to enforced TXT/ownership checks
 - Provider-branded default pages for valid, owned resources (not a takeover)
 - Soft 404s from your own infrastructure or catch-all vhosts
 
-## Impact
+## 影响
 
 - Content injection under trusted subdomain: phishing, malware delivery, brand damage
 - Cookie and CORS pivot: if parent site sets Domain-scoped cookies or allows subdomain origins
 - OAuth/SSO abuse via whitelisted redirect URIs
 - Email delivery manipulation for subdomain
 
-## Pro Tips
+## 实战技巧
 
 1. Build a pipeline: enumerate (subfinder/amass) → resolve (dnsx) → probe (httpx) → fingerprint (nuclei/custom) → verify claims
 2. Maintain a current fingerprint corpus; provider messages change frequently
@@ -153,6 +153,6 @@ TLS clues: certificate CN/SAN referencing provider default host instead of the c
 6. For NS delegations, treat any expired nameserver domain as critical
 7. Use CAA to limit certificate issuance while you triage
 
-## Summary
+## 总结
 
 Subdomain safety is lifecycle safety: if DNS points at anything, you must own and verify the thing on every provider and product path. Remove or verify—there is no safe middle.

@@ -1,4 +1,4 @@
-# Strix Documentation
+# Strix 文档
 
 Documentation source files for Strix, powered by [Mintlify](https://mintlify.com).
 

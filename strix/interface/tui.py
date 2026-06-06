@@ -29,6 +29,7 @@ from textual.widgets import Button, Label, Static, TextArea, Tree
 from textual.widgets.tree import TreeNode
 
 from strix.agents.StrixAgent import StrixAgent
+from strix.blackbox_graph import BlackboxGraphOrchestrator, is_pure_blackbox_scan
 from strix.interface.streaming_parser import parse_streaming_content
 from strix.interface.tool_components.agent_message_renderer import AgentMessageRenderer
 from strix.interface.tool_components.registry import get_tool_renderer
@@ -158,7 +159,7 @@ class SplashScreen(Static):  # type: ignore[misc]
         return Text("strix.ai", style=Style(color=self.PRIMARY_GREEN, bold=True))
 
     def _build_welcome_text(self) -> Text:
-        text = Text("Welcome to ", style=Style(color="white", bold=True))
+        text = Text("欢迎使用 ", style=Style(color="white", bold=True))
         text.append("Strix", style=Style(color=self.PRIMARY_GREEN, bold=True))
         text.append("!", style=Style(color="white", bold=True))
         return text
@@ -167,10 +168,10 @@ class SplashScreen(Static):  # type: ignore[misc]
         return Text(f"v{self._version}", style=Style(color="white", dim=True))
 
     def _build_tagline_text(self) -> Text:
-        return Text("Open-source AI hackers for your apps", style=Style(color="white", dim=True))
+        return Text("面向你的应用的开源 AI 安全助手", style=Style(color="white", dim=True))
 
     def _build_start_line_text(self, phase: int) -> Text:
-        full_text = "Starting Strix Agent"
+        full_text = "正在启动 Strix 智能体"
         text_len = len(full_text)
 
         shine_pos = phase % (text_len + 8)
@@ -196,10 +197,10 @@ class SplashScreen(Static):  # type: ignore[misc]
 class HelpScreen(ModalScreen):  # type: ignore[misc]
     def compose(self) -> ComposeResult:
         yield Grid(
-            Label("Strix Help", id="help_title"),
+            Label("Strix 帮助", id="help_title"),
             Label(
-                "F1        Help\nCtrl+Q/C  Quit\nESC       Stop Agent\n"
-                "Enter     Send message to agent\nTab       Switch panels\n↑/↓       Navigate tree",
+                "F1        帮助\nCtrl+Q/C  退出\nESC       停止智能体\n"
+                "Enter     向智能体发送消息\nTab       切换面板\n↑/↓       导航树",
                 id="help_content",
             ),
             id="dialog",
@@ -217,7 +218,7 @@ class StopAgentScreen(ModalScreen):  # type: ignore[misc]
 
     def compose(self) -> ComposeResult:
         yield Grid(
-            Label(f"🛑 Stop '{self.agent_name}'?", id="stop_agent_title"),
+            Label(f"🛑 停止“{self.agent_name}”吗？", id="stop_agent_title"),
             Grid(
                 Button("Yes", variant="error", id="stop_agent"),
                 Button("No", variant="default", id="cancel_stop"),
@@ -258,14 +259,14 @@ class StopAgentScreen(ModalScreen):  # type: ignore[misc]
 
 
 class VulnerabilityDetailScreen(ModalScreen):  # type: ignore[misc]
-    """Modal screen to display vulnerability details."""
+    """用于显示漏洞详情的模态窗口。"""
 
     SEVERITY_COLORS: ClassVar[dict[str, str]] = {
-        "critical": "#dc2626",  # Red
-        "high": "#ea580c",  # Orange
-        "medium": "#d97706",  # Amber
-        "low": "#22c55e",  # Green
-        "info": "#3b82f6",  # Blue
+        "critical": "#dc2626",  # 红色
+        "high": "#ea580c",  # 橙色
+        "medium": "#d97706",  # 琥珀色
+        "low": "#22c55e",  # 绿色
+        "info": "#3b82f6",  # 蓝色
     }
 
     FIELD_STYLE: ClassVar[str] = "bold #4ade80"
@@ -279,8 +280,8 @@ class VulnerabilityDetailScreen(ModalScreen):  # type: ignore[misc]
         yield Grid(
             VerticalScroll(Static(content, id="vuln_detail_content"), id="vuln_detail_scroll"),
             Horizontal(
-                Button("Copy", variant="default", id="copy_vuln_detail"),
-                Button("Done", variant="default", id="close_vuln_detail"),
+                Button("复制", variant="default", id="copy_vuln_detail"),
+                Button("完成", variant="default", id="close_vuln_detail"),
                 id="vuln_detail_buttons",
             ),
             id="vuln_detail_dialog",
@@ -334,59 +335,59 @@ class VulnerabilityDetailScreen(ModalScreen):  # type: ignore[misc]
         text = Text()
 
         text.append("🐞 ")
-        text.append("Vulnerability Report", style="bold #ea580c")
+        text.append("漏洞报告", style="bold #ea580c")
 
         agent_name = vuln.get("agent_name", "")
         if agent_name:
             text.append("\n\n")
-            text.append("Agent: ", style=self.FIELD_STYLE)
+            text.append("智能体：", style=self.FIELD_STYLE)
             text.append(agent_name)
 
         title = vuln.get("title", "")
         if title:
             text.append("\n\n")
-            text.append("Title: ", style=self.FIELD_STYLE)
+            text.append("标题：", style=self.FIELD_STYLE)
             text.append(title)
 
         severity = vuln.get("severity", "")
         if severity:
             text.append("\n\n")
-            text.append("Severity: ", style=self.FIELD_STYLE)
+            text.append("严重性：", style=self.FIELD_STYLE)
             severity_color = self.SEVERITY_COLORS.get(severity.lower(), "#6b7280")
             text.append(severity.upper(), style=f"bold {severity_color}")
 
         cvss_score = vuln.get("cvss")
         if cvss_score is not None:
             text.append("\n\n")
-            text.append("CVSS Score: ", style=self.FIELD_STYLE)
+            text.append("CVSS 评分：", style=self.FIELD_STYLE)
             cvss_color = self._get_cvss_color(float(cvss_score))
             text.append(str(cvss_score), style=f"bold {cvss_color}")
 
         target = vuln.get("target", "")
         if target:
             text.append("\n\n")
-            text.append("Target: ", style=self.FIELD_STYLE)
+            text.append("目标：", style=self.FIELD_STYLE)
             text.append(target)
 
         endpoint = vuln.get("endpoint", "")
         if endpoint:
             text.append("\n\n")
-            text.append("Endpoint: ", style=self.FIELD_STYLE)
+            text.append("端点：", style=self.FIELD_STYLE)
             text.append(endpoint)
 
         method = vuln.get("method", "")
         if method:
             text.append("\n\n")
-            text.append("Method: ", style=self.FIELD_STYLE)
+            text.append("方法：", style=self.FIELD_STYLE)
             text.append(method)
 
         cve = vuln.get("cve", "")
         if cve:
             text.append("\n\n")
-            text.append("CVE: ", style=self.FIELD_STYLE)
+            text.append("CVE：", style=self.FIELD_STYLE)
             text.append(cve)
 
-        # CVSS breakdown
+        # CVSS 拆解
         cvss_breakdown = vuln.get("cvss_breakdown", {})
         if cvss_breakdown:
             cvss_parts = []
@@ -408,82 +409,82 @@ class VulnerabilityDetailScreen(ModalScreen):  # type: ignore[misc]
                 cvss_parts.append(f"A:{cvss_breakdown['availability']}")
             if cvss_parts:
                 text.append("\n\n")
-                text.append("CVSS Vector: ", style=self.FIELD_STYLE)
+                text.append("CVSS 向量：", style=self.FIELD_STYLE)
                 text.append("/".join(cvss_parts), style="dim")
 
         description = vuln.get("description", "")
         if description:
             text.append("\n\n")
-            text.append("Description", style=self.FIELD_STYLE)
+            text.append("描述", style=self.FIELD_STYLE)
             text.append("\n")
             text.append(description)
 
         impact = vuln.get("impact", "")
         if impact:
             text.append("\n\n")
-            text.append("Impact", style=self.FIELD_STYLE)
+            text.append("影响", style=self.FIELD_STYLE)
             text.append("\n")
             text.append(impact)
 
         technical_analysis = vuln.get("technical_analysis", "")
         if technical_analysis:
             text.append("\n\n")
-            text.append("Technical Analysis", style=self.FIELD_STYLE)
+            text.append("技术分析", style=self.FIELD_STYLE)
             text.append("\n")
             text.append(technical_analysis)
 
         poc_description = vuln.get("poc_description", "")
         if poc_description:
             text.append("\n\n")
-            text.append("PoC Description", style=self.FIELD_STYLE)
+            text.append("概念验证说明", style=self.FIELD_STYLE)
             text.append("\n")
             text.append(poc_description)
 
         poc_script_code = vuln.get("poc_script_code", "")
         if poc_script_code:
             text.append("\n\n")
-            text.append("PoC Code", style=self.FIELD_STYLE)
+            text.append("概念验证代码", style=self.FIELD_STYLE)
             text.append("\n")
             text.append_text(self._highlight_python(poc_script_code))
 
         remediation_steps = vuln.get("remediation_steps", "")
         if remediation_steps:
             text.append("\n\n")
-            text.append("Remediation", style=self.FIELD_STYLE)
+            text.append("修复建议", style=self.FIELD_STYLE)
             text.append("\n")
             text.append(remediation_steps)
 
         return text
 
     def _get_markdown_report(self) -> str:  # noqa: PLR0912, PLR0915
-        """Get Markdown version of vulnerability report for clipboard."""
+        """获取漏洞报告的 Markdown 版本以便复制。"""
         vuln = self.vulnerability
         lines: list[str] = []
 
         # Title
-        title = vuln.get("title", "Untitled Vulnerability")
+        title = vuln.get("title", "未命名漏洞")
         lines.append(f"# {title}")
         lines.append("")
 
         # Metadata
         if vuln.get("id"):
-            lines.append(f"**ID:** {vuln['id']}")
+            lines.append(f"**编号：** {vuln['id']}")
         if vuln.get("severity"):
-            lines.append(f"**Severity:** {vuln['severity'].upper()}")
+            lines.append(f"**严重性：** {vuln['severity'].upper()}")
         if vuln.get("timestamp"):
-            lines.append(f"**Found:** {vuln['timestamp']}")
+            lines.append(f"**发现时间：** {vuln['timestamp']}")
         if vuln.get("agent_name"):
-            lines.append(f"**Agent:** {vuln['agent_name']}")
+            lines.append(f"**智能体：** {vuln['agent_name']}")
         if vuln.get("target"):
-            lines.append(f"**Target:** {vuln['target']}")
+            lines.append(f"**目标：** {vuln['target']}")
         if vuln.get("endpoint"):
-            lines.append(f"**Endpoint:** {vuln['endpoint']}")
+            lines.append(f"**端点：** {vuln['endpoint']}")
         if vuln.get("method"):
-            lines.append(f"**Method:** {vuln['method']}")
+            lines.append(f"**方法：** {vuln['method']}")
         if vuln.get("cve"):
-            lines.append(f"**CVE:** {vuln['cve']}")
+            lines.append(f"**CVE：** {vuln['cve']}")
         if vuln.get("cvss") is not None:
-            lines.append(f"**CVSS:** {vuln['cvss']}")
+            lines.append(f"**CVSS：** {vuln['cvss']}")
 
         # CVSS Vector
         cvss_breakdown = vuln.get("cvss_breakdown", {})
@@ -502,25 +503,25 @@ class VulnerabilityDetailScreen(ModalScreen):  # type: ignore[misc]
                 f"{abbrevs.get(k, k)}:{v}" for k, v in cvss_breakdown.items() if v and k in abbrevs
             ]
             if parts:
-                lines.append(f"**CVSS Vector:** {'/'.join(parts)}")
+                lines.append(f"**CVSS 向量：** {'/'.join(parts)}")
 
         # Description
         lines.append("")
-        lines.append("## Description")
+        lines.append("## 描述")
         lines.append("")
-        lines.append(vuln.get("description") or "No description provided.")
+        lines.append(vuln.get("description") or "未提供描述。")
 
         # Impact
         if vuln.get("impact"):
-            lines.extend(["", "## Impact", "", vuln["impact"]])
+            lines.extend(["", "## 影响", "", vuln["impact"]])
 
-        # Technical Analysis
+        # 技术分析
         if vuln.get("technical_analysis"):
-            lines.extend(["", "## Technical Analysis", "", vuln["technical_analysis"]])
+            lines.extend(["", "## 技术分析", "", vuln["technical_analysis"]])
 
         # Proof of Concept
         if vuln.get("poc_description") or vuln.get("poc_script_code"):
-            lines.extend(["", "## Proof of Concept", ""])
+            lines.extend(["", "## 概念验证", ""])
             if vuln.get("poc_description"):
                 lines.append(vuln["poc_description"])
                 lines.append("")
@@ -531,7 +532,7 @@ class VulnerabilityDetailScreen(ModalScreen):  # type: ignore[misc]
 
         # Code Analysis
         if vuln.get("code_locations"):
-            lines.extend(["", "## Code Analysis", ""])
+            lines.extend(["", "## 代码分析", ""])
             for i, loc in enumerate(vuln["code_locations"]):
                 file_ref = loc.get("file", "unknown")
                 line_ref = ""
@@ -540,13 +541,13 @@ class VulnerabilityDetailScreen(ModalScreen):  # type: ignore[misc]
                         line_ref = f" (lines {loc['start_line']}-{loc['end_line']})"
                     else:
                         line_ref = f" (line {loc['start_line']})"
-                lines.append(f"**Location {i + 1}:** `{file_ref}`{line_ref}")
+                lines.append(f"**位置 {i + 1}:** `{file_ref}`{line_ref}")
                 if loc.get("label"):
                     lines.append(f"  {loc['label']}")
                 if loc.get("snippet"):
                     lines.append(f"```\n{loc['snippet']}\n```")
                 if loc.get("fix_before") or loc.get("fix_after"):
-                    lines.append("**Suggested Fix:**")
+                    lines.append("**建议修复：**")
                     lines.append("```diff")
                     if loc.get("fix_before"):
                         lines.extend(f"- {line}" for line in loc["fix_before"].splitlines())
@@ -555,9 +556,9 @@ class VulnerabilityDetailScreen(ModalScreen):  # type: ignore[misc]
                     lines.append("```")
                 lines.append("")
 
-        # Remediation
+        # 修复建议
         if vuln.get("remediation_steps"):
-            lines.extend(["", "## Remediation", "", vuln["remediation_steps"]])
+            lines.extend(["", "## 修复建议", "", vuln["remediation_steps"]])
 
         lines.append("")
         return "\n".join(lines)
@@ -573,26 +574,26 @@ class VulnerabilityDetailScreen(ModalScreen):  # type: ignore[misc]
             self.app.copy_to_clipboard(markdown_text)
 
             copy_button = self.query_one("#copy_vuln_detail", Button)
-            copy_button.label = "Copied!"
-            self.set_timer(1.5, lambda: setattr(copy_button, "label", "Copy"))
+            copy_button.label = "已复制!"
+            self.set_timer(1.5, lambda: setattr(copy_button, "label", "复制"))
         elif event.button.id == "close_vuln_detail":
             self.app.pop_screen()
 
 
 class VulnerabilityItem(Static):  # type: ignore[misc]
-    """A clickable vulnerability item."""
+    """可点击的漏洞条目。"""
 
     def __init__(self, label: Text, vuln_data: dict[str, Any], **kwargs: Any) -> None:
         super().__init__(label, **kwargs)
         self.vuln_data = vuln_data
 
     def on_click(self, _event: events.Click) -> None:
-        """Handle click to open vulnerability detail."""
+        """处理点击并打开漏洞详情。"""
         self.app.push_screen(VulnerabilityDetailScreen(self.vuln_data))
 
 
 class VulnerabilitiesPanel(VerticalScroll):  # type: ignore[misc]
-    """A scrollable panel showing found vulnerabilities with severity-colored dots."""
+    """带有按严重性着色圆点的可滚动漏洞面板。"""
 
     SEVERITY_COLORS: ClassVar[dict[str, str]] = {
         "critical": "#dc2626",  # Red
@@ -610,14 +611,14 @@ class VulnerabilitiesPanel(VerticalScroll):  # type: ignore[misc]
         return []
 
     def update_vulnerabilities(self, vulnerabilities: list[dict[str, Any]]) -> None:
-        """Update the list of vulnerabilities and re-render."""
+        """更新漏洞列表并重新渲染。"""
         if self._vulnerabilities == vulnerabilities:
             return
         self._vulnerabilities = list(vulnerabilities)
         self._render_panel()
 
     def _render_panel(self) -> None:
-        """Render the vulnerabilities panel content."""
+        """渲染漏洞面板内容。"""
         for child in list(self.children):
             if isinstance(child, VulnerabilityItem):
                 child.remove()
@@ -627,7 +628,7 @@ class VulnerabilitiesPanel(VerticalScroll):  # type: ignore[misc]
 
         for vuln in self._vulnerabilities:
             severity = vuln.get("severity", "info").lower()
-            title = vuln.get("title", "Unknown Vulnerability")
+            title = vuln.get("title", "未知漏洞")
             color = self.SEVERITY_COLORS.get(severity, "#3b82f6")
 
             label = Text()
@@ -641,10 +642,10 @@ class VulnerabilitiesPanel(VerticalScroll):  # type: ignore[misc]
 class QuitScreen(ModalScreen):  # type: ignore[misc]
     def compose(self) -> ComposeResult:
         yield Grid(
-            Label("Quit Strix?", id="quit_title"),
+            Label("退出 Strix？", id="quit_title"),
             Grid(
-                Button("Yes", variant="error", id="quit"),
-                Button("No", variant="default", id="cancel"),
+                Button("是", variant="error", id="quit"),
+                Button("否", variant="default", id="cancel"),
                 id="quit_buttons",
             ),
             id="quit_dialog",
@@ -692,10 +693,10 @@ class StrixTUIApp(App):  # type: ignore[misc]
     show_splash: reactive[bool] = reactive(default=True)
 
     BINDINGS: ClassVar[list[Binding]] = [
-        Binding("f1", "toggle_help", "Help", priority=True),
-        Binding("ctrl+q", "request_quit", "Quit", priority=True),
-        Binding("ctrl+c", "request_quit", "Quit", priority=True),
-        Binding("escape", "stop_selected_agent", "Stop Agent", priority=True),
+        Binding("f1", "toggle_help", "帮助", priority=True),
+        Binding("ctrl+q", "request_quit", "退出", priority=True),
+        Binding("ctrl+c", "request_quit", "退出", priority=True),
+        Binding("escape", "stop_selected_agent", "停止智能体", priority=True),
     ]
 
     def __init__(self, args: argparse.Namespace):
@@ -962,7 +963,7 @@ class StrixTUIApp(App):  # type: ignore[misc]
         except (KeyError, AttributeError, ValueError) as e:
             import logging
 
-            logging.warning(f"Failed to update agent node label: {e}")
+            logging.warning(f"更新智能体节点标签失败：{e}")
 
         return False
 
@@ -971,7 +972,7 @@ class StrixTUIApp(App):  # type: ignore[misc]
     ) -> tuple[Any, str | None]:
         if not self.selected_agent_id:
             return self._get_chat_placeholder_content(
-                "Select an agent from the tree to see its activity.", "placeholder-no-agent"
+                "从树中选择一个智能体查看其活动。", "placeholder-no-agent"
             )
 
         events = self._gather_agent_events(self.selected_agent_id)
@@ -979,7 +980,7 @@ class StrixTUIApp(App):  # type: ignore[misc]
 
         if not events and not streaming:
             return self._get_chat_placeholder_content(
-                "Starting agent...", "placeholder-no-activity"
+                "正在启动智能体...", "placeholder-no-activity"
             )
 
         current_event_ids = [e["id"] for e in events]
@@ -1185,7 +1186,7 @@ class StrixTUIApp(App):  # type: ignore[misc]
         else:
             text.append("● ", style="yellow")
 
-        text.append("Using tool ", style="dim")
+        text.append("正在使用工具 ", style="dim")
         text.append(tool_name, style="bold blue")
 
         if args:
@@ -1214,9 +1215,9 @@ class StrixTUIApp(App):  # type: ignore[misc]
             return t
 
         simple_statuses: dict[str, tuple[str, str]] = {
-            "stopping": ("Agent stopping...", ""),
-            "stopped": ("Agent stopped", ""),
-            "completed": ("Agent completed", ""),
+            "stopping": ("智能体正在停止...", ""),
+            "stopped": ("智能体已停止", ""),
+            "completed": ("智能体已完成", ""),
         }
 
         if status in simple_statuses:
@@ -1231,15 +1232,15 @@ class StrixTUIApp(App):  # type: ignore[misc]
             if error_msg:
                 text.append(error_msg, style="red")
             else:
-                text.append("LLM request failed", style="red")
+                text.append("LLM 请求失败", style="red")
             self._stop_dot_animation()
             keymap = Text()
-            keymap.append("Send message to retry", style="dim")
+            keymap.append("发送消息以重试", style="dim")
             return (text, keymap, False)
 
         if status == "waiting":
             keymap = Text()
-            keymap.append("Send message to resume", style="dim")
+            keymap.append("发送消息以继续", style="dim")
             return (Text(" "), keymap, False)
 
         if status == "running":
@@ -1250,7 +1251,7 @@ class StrixTUIApp(App):  # type: ignore[misc]
                 animated_text.append(" ", style="dim")
                 animated_text.append("stop", style="dim")
                 return (animated_text, keymap_styled([("ctrl-q", "quit")]), True)
-            animated_text = self._get_animated_verb_text(agent_id, "Initializing")
+            animated_text = self._get_animated_verb_text(agent_id, "初始化中")
             return (animated_text, keymap_styled([("ctrl-q", "quit")]), True)
 
         return (None, Text(), False)
@@ -1350,7 +1351,7 @@ class StrixTUIApp(App):  # type: ignore[misc]
                 if isinstance(result, dict) and result.get("report_id") == report_id:
                     agent_id = tool_data.get("agent_id")
                     if agent_id and agent_id in self.tracer.agents:
-                        name: str = self.tracer.agents[agent_id].get("name", "Unknown Agent")
+                        name: str = self.tracer.agents[agent_id].get("name", "未知智能体")
                         return name
         return None
 
@@ -1502,10 +1503,20 @@ class StrixTUIApp(App):  # type: ignore[misc]
                 asyncio.set_event_loop(loop)
 
                 try:
-                    agent = StrixAgent(self.agent_config)
-
                     if not self._scan_stop_event.is_set():
-                        loop.run_until_complete(agent.execute_scan(self.scan_config))
+                        if is_pure_blackbox_scan(
+                            self.scan_config, getattr(self.args, "local_sources", None)
+                        ):
+                            orchestrator = BlackboxGraphOrchestrator(
+                                self.scan_config,
+                                scan_mode=getattr(self.args, "scan_mode", "deep"),
+                                interactive=True,
+                                resume=bool(getattr(self.args, "resume", None)),
+                            )
+                            loop.run_until_complete(orchestrator.run())
+                        else:
+                            agent = StrixAgent(self.agent_config)
+                            loop.run_until_complete(agent.execute_scan(self.scan_config))
 
                 except (KeyboardInterrupt, asyncio.CancelledError):
                     logging.info("Scan interrupted by user")
@@ -1585,7 +1596,7 @@ class StrixTUIApp(App):  # type: ignore[misc]
         except (AttributeError, ValueError, RuntimeError) as e:
             import logging
 
-            logging.warning(f"Failed to add agent node {agent_id}: {e}")
+            logging.warning(f"添加智能体节点 {agent_id} 失败：{e}")
 
     def _expand_new_agent_nodes(self) -> None:
         if len(self.screen_stack) > 1 or self.show_splash:
@@ -1605,7 +1616,7 @@ class StrixTUIApp(App):  # type: ignore[misc]
             agents_tree = self.query_one("#agents_tree", Tree)
             self._expand_node_recursively(agents_tree.root)
         except (ValueError, Exception):
-            logging.debug("Tree not ready for expanding nodes")
+            logging.debug("树尚未准备好展开节点")
 
     def _expand_node_recursively(self, node: TreeNode) -> None:
         if not node.is_expanded:
@@ -1694,13 +1705,13 @@ class StrixTUIApp(App):  # type: ignore[misc]
             interrupted_text = Text()
             interrupted_text.append("\n")
             interrupted_text.append("⚠ ", style="yellow")
-            interrupted_text.append("Interrupted by user", style="yellow dim")
+            interrupted_text.append("已被用户中断", style="yellow dim")
             return self._merge_renderables([streaming_result, interrupted_text])
 
         return AgentMessageRenderer.render_simple(content)
 
     def _render_tool_content_simple(self, tool_data: dict[str, Any]) -> Any:
-        tool_name = tool_data.get("tool_name", "Unknown Tool")
+        tool_name = tool_data.get("tool_name", "未知工具")
         args = tool_data.get("args", {})
         status = tool_data.get("status", "unknown")
         result = tool_data.get("result")
@@ -1716,7 +1727,7 @@ class StrixTUIApp(App):  # type: ignore[misc]
         if tool_name in ("llm_error_details", "sandbox_error_details"):
             return self._render_error_details(text, tool_name, args)
 
-        text.append("→ Using tool ")
+        text.append("→ 正在使用工具 ")
         text.append(tool_name, style="bold blue")
 
         status_styles = {
@@ -1744,23 +1755,23 @@ class StrixTUIApp(App):  # type: ignore[misc]
             if len(result_str) > 1000:
                 result_str = result_str[:997] + "..."
             text.append("\n")
-            text.append("Result: ", style="bold")
+            text.append("结果：", style="bold")
             text.append(result_str)
 
         return text
 
     def _render_error_details(self, text: Any, tool_name: str, args: dict[str, Any]) -> Any:
         if tool_name == "llm_error_details":
-            text.append("✗ LLM Request Failed", style="red")
+            text.append("✗ LLM 请求失败", style="red")
         else:
-            text.append("✗ Sandbox Initialization Failed", style="red")
+            text.append("✗ 沙箱初始化失败", style="red")
             if args.get("error"):
                 text.append(f"\n{args['error']}", style="bold red")
         if args.get("details"):
             details = str(args["details"])
             if len(details) > 1000:
                 details = details[:997] + "..."
-            text.append("\nDetails: ", style="dim")
+            text.append("\n详情：", style="dim")
             text.append(details)
         return text
 
@@ -1841,7 +1852,7 @@ class StrixTUIApp(App):  # type: ignore[misc]
         except (ImportError, AttributeError) as e:
             import logging
 
-            logging.warning(f"Failed to send message to agent {self.selected_agent_id}: {e}")
+            logging.warning(f"向智能体 {self.selected_agent_id} 发送消息失败：{e}")
 
         self._displayed_events.clear()
         self._update_chat_view()
@@ -1855,8 +1866,8 @@ class StrixTUIApp(App):  # type: ignore[misc]
                 if isinstance(agent_name, str):
                     return agent_name
         except (KeyError, AttributeError) as e:
-            logging.warning(f"Could not retrieve agent name for {agent_id}: {e}")
-        return "Unknown Agent"
+            logging.warning(f"无法获取智能体 {agent_id} 的名称：{e}")
+        return "未知智能体"
 
     def action_toggle_help(self) -> None:
         if self.show_splash or not self.is_mounted:
@@ -1915,12 +1926,12 @@ class StrixTUIApp(App):  # type: ignore[misc]
         self.push_screen(StopAgentScreen(agent_name, self.selected_agent_id))
 
     def _validate_agent_for_stopping(self) -> tuple[str, bool]:
-        agent_name = "Unknown Agent"
+        agent_name = "未知智能体"
 
         try:
             if self.tracer and self.selected_agent_id in self.tracer.agents:
                 agent_data = self.tracer.agents[self.selected_agent_id]
-                agent_name = agent_data.get("name", "Unknown Agent")
+                agent_name = agent_data.get("name", "未知智能体")
 
                 agent_status = agent_data.get("status", "running")
                 if agent_status not in ["running"]:
@@ -1935,7 +1946,7 @@ class StrixTUIApp(App):  # type: ignore[misc]
         except (KeyError, AttributeError, ValueError) as e:
             import logging
 
-            logging.warning(f"Failed to gather agent events: {e}")
+            logging.warning(f"收集智能体事件失败：{e}")
 
         return agent_name, False
 
@@ -1948,14 +1959,14 @@ class StrixTUIApp(App):  # type: ignore[misc]
             import logging
 
             if result.get("success"):
-                logging.info(f"Stop request sent to agent: {result.get('message', 'Unknown')}")
+                logging.info(f"已向智能体发送停止请求：{result.get('message', '未知')}")
             else:
-                logging.warning(f"Failed to stop agent: {result.get('error', 'Unknown error')}")
+                logging.warning(f"停止智能体失败：{result.get('error', '未知错误')}")
 
         except Exception:
             import logging
 
-            logging.exception(f"Failed to stop agent {agent_id}")
+            logging.exception(f"停止智能体 {agent_id} 失败")
 
     def action_custom_quit(self) -> None:
         if self._scan_thread and self._scan_thread.is_alive():
@@ -2033,11 +2044,11 @@ class StrixTUIApp(App):  # type: ignore[misc]
 
     _DECORATIVE_LINES: ClassVar[frozenset[str]] = frozenset(
         {
-            "● In progress...",
-            "✓ Done",
-            "✗ Failed",
-            "✗ Error",
-            "○ Unknown",
+        "● 进行中...",
+        "✓ 已完成",
+        "✗ 失败",
+        "✗ 错误",
+        "○ 未知",
         }
     )
 
@@ -2072,7 +2083,7 @@ class StrixTUIApp(App):  # type: ignore[misc]
                     self.copy_to_clipboard(cleaned if cleaned.strip() else selected)
                     copied = True
         except Exception:  # noqa: BLE001
-            logger.debug("Failed to copy screen selection", exc_info=True)
+            logger.debug("复制屏幕选择失败", exc_info=True)
 
         if not copied:
             try:
@@ -2083,13 +2094,13 @@ class StrixTUIApp(App):  # type: ignore[misc]
                     chat_input.move_cursor(chat_input.cursor_location)
                     copied = True
             except Exception:  # noqa: BLE001
-                logger.debug("Failed to copy chat input selection", exc_info=True)
+                logger.debug("复制聊天输入选择失败", exc_info=True)
 
         if copied:
-            self.notify("Copied to clipboard", timeout=2)
+            self.notify("已复制到剪贴板", timeout=2)
 
 
 async def run_tui(args: argparse.Namespace) -> None:
-    """Run strix in interactive TUI mode with textual."""
+    """以 textual 的交互式 TUI 模式运行 strix。"""
     app = StrixTUIApp(args)
     await app.run_async()

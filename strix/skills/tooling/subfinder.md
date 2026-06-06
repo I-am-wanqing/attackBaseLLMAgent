@@ -1,9 +1,9 @@
 ---
 name: subfinder
-description: Subfinder passive subdomain enumeration syntax, source controls, and pipeline-ready output patterns.
+description: Subfinder 子域名枚举工具的使用指南
 ---
 
-# Subfinder CLI Playbook
+# Subfinder 工具指南
 
 Official docs:
 - https://docs.projectdiscovery.io/opensource/subfinder/usage

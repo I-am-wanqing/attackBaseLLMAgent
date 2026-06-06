@@ -1,31 +1,31 @@
 ---
-title: "CI/CD Integration"
-description: "Run Strix in any CI/CD pipeline"
+title: "CI/CD 集成"
+description: "在任意 CI/CD 流水线中运行 Strix"
 ---
 
-Strix runs in headless mode for automated pipelines.
+Strix 以无头模式运行，适用于自动化流水线。
 
-## Headless Mode
+## Headless 模式
 
-Use the `-n` or `--non-interactive` flag:
+使用 `-n` 或 `--non-interactive` 参数：
 
 ```bash
 strix -n --target ./app --scan-mode quick
 ```
 
-For pull-request style CI runs, Strix automatically scopes quick scans to changed files. You can force this behavior and set a base ref explicitly:
+对于类似 Pull Request 的 CI 运行，Strix 会自动将快速扫描限制在变更文件范围内。你也可以强制使用此行为并显式设置基准引用：
 
 ```bash
 strix -n --target ./app --scan-mode quick --scope-mode diff --diff-base origin/main
 ```
 
-## Exit Codes
+## 退出码
 
-| Code | Meaning |
+| 代码 | 含义 |
 |------|---------|
-| 0 | No vulnerabilities found |
-| 1 | Execution error |
-| 2 | Vulnerabilities found |
+| 0 | 未发现漏洞 |
+| 1 | 执行错误 |
+| 2 | 发现漏洞 |
 
 ## GitLab CI
 
@@ -82,9 +82,9 @@ jobs:
 ```
 
 <Note>
-All CI platforms require Docker access. Ensure your runner has Docker available.
+所有 CI 平台都需要 Docker 访问权限。请确保你的运行器可用 Docker。
 </Note>
 
 <Tip>
-If diff-scope fails in CI, fetch full git history (for example, `fetch-depth: 0` in GitHub Actions) so merge-base and branch comparison can be resolved.
+如果 CI 中的 diff-scope 失败，请拉取完整的 Git 历史（例如在 GitHub Actions 中设置 `fetch-depth: 0`），以便解析 merge-base 和分支比较。
 </Tip>

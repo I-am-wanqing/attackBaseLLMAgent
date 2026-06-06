@@ -161,11 +161,11 @@ def parse_traceloop_headers(raw_headers: str) -> dict[str, str]:
         try:
             parsed = json.loads(headers)
         except json.JSONDecodeError:
-            logger.warning("Invalid TRACELOOP_HEADERS JSON, ignoring custom headers")
+            logger.warning("TRACELOOP_HEADERS JSON 无效，已忽略自定义请求头")
             return {}
         if isinstance(parsed, dict):
             return {str(key): str(value) for key, value in parsed.items() if value is not None}
-        logger.warning("TRACELOOP_HEADERS JSON must be an object, ignoring custom headers")
+        logger.warning("TRACELOOP_HEADERS JSON 必须是对象，已忽略自定义请求头")
         return {}
 
     result: dict[str, str] = {}
@@ -181,7 +181,7 @@ def parse_traceloop_headers(raw_headers: str) -> dict[str, str]:
 
 
 def prune_otel_span_attributes(attributes: dict[str, Any]) -> dict[str, Any]:
-    """Drop high-volume LLM payload attributes to keep JSONL event files compact."""
+    """丢弃高体量的 LLM 载荷字段，以保持 JSONL 事件文件紧凑。"""
     filtered: dict[str, Any] = {}
     filtered_count = 0
 
@@ -204,7 +204,7 @@ def prune_otel_span_attributes(attributes: dict[str, Any]) -> dict[str, Any]:
 
 
 class JsonlSpanExporter(SpanExporter):  # type: ignore[misc]
-    """Append OTEL spans to JSONL for local run artifacts."""
+    """将 OTEL span 追加到 JSONL，作为本地运行产物。"""
 
     def __init__(
         self,
@@ -237,7 +237,7 @@ class JsonlSpanExporter(SpanExporter):  # type: ignore[misc]
                 for record in records:
                     f.write(json.dumps(record, ensure_ascii=False) + "\n")
         except OSError:
-            logger.exception("Failed to write OTEL span records to JSONL")
+            logger.exception("写入 OTEL span 记录到 JSONL 失败")
             return SpanExportResult.FAILURE
 
         return SpanExportResult.SUCCESS
@@ -374,7 +374,7 @@ def bootstrap_otel(
                     sys.stdout = _stdout
                 otel_init_ok = True
             except Exception:
-                logger.exception("Failed to initialize Traceloop/OpenLLMetry")
+                logger.exception("初始化 Traceloop/OpenLLMetry 失败")
                 remote_enabled = False
 
         if not otel_init_ok:
@@ -395,14 +395,14 @@ def bootstrap_otel(
                         )
                     )
                 except Exception:
-                    logger.exception("Failed to configure OTLP HTTP exporter")
+                    logger.exception("配置 OTLP HTTP 导出器失败")
                     remote_enabled = False
 
             try:
                 trace.set_tracer_provider(provider)
                 otel_init_ok = True
             except Exception:
-                logger.exception("Failed to set OpenTelemetry tracer provider")
+                logger.exception("设置 OpenTelemetry tracer provider 失败")
                 remote_enabled = False
 
         otel_tracer = trace.get_tracer(tracer_name)

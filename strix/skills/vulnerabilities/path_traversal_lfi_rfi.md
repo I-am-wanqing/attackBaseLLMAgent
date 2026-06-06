@@ -1,13 +1,13 @@
 ---
 name: path-traversal-lfi-rfi
-description: Path traversal and file inclusion testing for local/remote file access and code execution
+description: 路径遍历、LFI 和 RFI 安全测试技能
 ---
 
-# Path Traversal / LFI / RFI
+# 路径遍历 / LFI / RFI
 
 Improper file path handling and dynamic inclusion enable sensitive file disclosure, config/source leakage, SSRF pivots, and code execution. Treat all user-influenced paths, names, and schemes as untrusted; normalize and bind them to an allowlist or eliminate user control entirely.
 
-## Attack Surface
+## 攻击面
 
 **Path Traversal**
 - Read files outside intended roots via `../`, encoding, normalization gaps
@@ -76,7 +76,7 @@ Improper file path handling and dynamic inclusion enable sensitive file disclosu
 - Archive extraction writes files unexpectedly outside target
 - Verify with directory listings or follow-up reads
 
-## Key Vulnerabilities
+## 关键漏洞
 
 ### Path Traversal Bypasses
 
@@ -145,9 +145,9 @@ Improper file path handling and dynamic inclusion enable sensitive file disclosu
 - Files within archives containing `../` or absolute paths escape target extract directory
 - Test multiple formats: zip/tar/tgz/7z
 - Verify symlink handling and path canonicalization prior to write
-- Impact: overwrite config/templates or drop webshells into served directories
+- 影响: overwrite config/templates or drop webshells into served directories
 
-## Testing Methodology
+## 测试方法
 
 1. **Inventory file operations** - Downloads, previews, templates, logs, exports/imports, report engines, uploads, archive extractors
 2. **Identify input joins** - Path joins (base + user), include/require/template loads, resource fetchers, archive extract destinations
@@ -155,7 +155,7 @@ Improper file path handling and dynamic inclusion enable sensitive file disclosu
 4. **Compare behaviors** - Web server vs application behavior
 5. **Escalate** - From disclosure (read) to influence (write/extract/include), then to execution (wrapper/engine chains)
 
-## Validation
+## 验证
 
 1. Show a minimal traversal read proving out-of-root access (e.g., `/etc/hosts`) with a same-endpoint in-root control
 2. For LFI, demonstrate inclusion of a benign local file or harmless wrapper output (`php://filter` base64 of index.php)
@@ -163,21 +163,21 @@ Improper file path handling and dynamic inclusion enable sensitive file disclosu
 4. For Zip Slip, create an archive with `../` entries and show write outside target (e.g., marker file read back)
 5. Provide before/after file paths, exact requests, and content hashes/lengths for reproducibility
 
-## False Positives
+## 误报
 
 - In-app virtual paths that do not map to filesystem; content comes from safe stores (DB/object storage)
 - Canonicalized paths constrained to an allowlist/root after normalization
 - Wrappers disabled and includes using constant templates only
 - Archive extractors that sanitize paths and enforce destination directories
 
-## Impact
+## 影响
 
 - Sensitive configuration/source disclosure → credential and key compromise
 - Code execution via inclusion of attacker-controlled content or overwritten templates
 - Persistence via dropped files in served directories; lateral movement via revealed secrets
 - Supply-chain impact when report/template engines execute attacker-influenced files
 
-## Pro Tips
+## 实战技巧
 
 1. Compare content-length/ETag when content is masked; read small canonical files (hosts) to avoid noise
 2. Test proxy/CDN and app separately; decoding/normalization order differs, especially for `%2f` and `%2e` encodings
@@ -185,6 +185,6 @@ Improper file path handling and dynamic inclusion enable sensitive file disclosu
 4. Validate extraction code with synthetic archives; include symlinks and deep `../` chains
 5. Use minimal PoCs and hard evidence (hashes, paths). Avoid noisy DoS against filesystems
 
-## Summary
+## 总结
 
 Eliminate user-controlled paths where possible. Otherwise, resolve to canonical paths and enforce allowlists, forbid remote schemes, and lock down interpreters and extractors. Normalize consistently at the boundary closest to IO.

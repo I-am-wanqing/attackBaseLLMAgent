@@ -1,53 +1,53 @@
 <tools>
   <tool name="finish_scan">
-    <description>Complete the security scan by providing the final assessment fields as full penetration test report.
+    <description>通过提供最终评估字段来完成安全扫描，并生成完整的渗透测试报告。
 
-IMPORTANT: This tool can ONLY be used by the root/main agent.
-Subagents must use agent_finish from agents_graph tool instead.
+重要：该工具只能由根/主智能体使用。
+子智能体必须改用 agents_graph 工具中的 agent_finish。
 
-IMPORTANT: This tool will NOT allow finishing if any agents are still running or stopping.
-You must wait for all agents to complete before using this tool.
+重要：如果仍有任何智能体在运行或停止中，该工具将不允许结束。
+在使用该工具之前，你必须等待所有智能体完成。
 
-This tool directly updates the scan report data:
+该工具会直接更新扫描报告数据：
 - executive_summary
 - methodology
 - technical_analysis
 - recommendations
 
-All fields are REQUIRED and map directly to the final report.
+所有字段均为必填，并会直接映射到最终报告。
 
-This must be the last tool called in the scan. It will:
-1. Verify you are the root agent
-2. Check all subagents have completed
-3. Update the scan with your provided fields
-4. Mark the scan as completed
-5. Stop agent execution
+这必须是扫描中调用的最后一个工具。它会：
+1. 验证你是否为根智能体
+2. 检查所有子智能体是否已完成
+3. 使用你提供的字段更新扫描
+4. 将扫描标记为已完成
+5. 停止智能体执行
 
-Use this tool when:
-- You are the main/root agent conducting the security assessment
-- ALL subagents have completed their tasks (no agents are "running" or "stopping")
-- You have completed all testing phases
-- You are ready to conclude the entire security assessment
+在以下情况下使用该工具：
+- 你是执行安全评估的主/根智能体
+- 所有子智能体都已完成任务（没有智能体处于“运行”或“停止”状态）
+- 你已完成所有测试阶段
+- 你已准备好结束整个安全评估
 
-IMPORTANT: Calling this tool multiple times will OVERWRITE any previous scan report.
-Make sure you include ALL findings and details in a single comprehensive report.
+重要：多次调用该工具将覆盖之前的扫描报告。
+请确保在一份完整报告中包含所有发现和细节。
 
-If agents are still running, the tool will:
-- Show you which agents are still active
-- Suggest using wait_for_message to wait for completion
-- Suggest messaging agents if immediate completion is needed
+如果智能体仍在运行，该工具将：
+- 显示哪些智能体仍在活动
+- 建议使用 wait_for_message 等待完成
+- 如果需要立即完成，建议向智能体发送消息
 
-NOTE: Make sure the vulnerabilities found were reported with create_vulnerability_report tool, otherwise they will not be tracked and you will not be rewarded.
-But make sure to not report the same vulnerability multiple times.
+注意：确保发现的漏洞已通过 create_vulnerability_report 工具上报，否则它们不会被追踪，你也不会获得奖励。
+但请确保不要重复报告同一个漏洞。
 
-Professional, customer-facing penetration test report rules (PDF-ready):
-- Do NOT include internal or system details: never mention local/absolute paths (e.g., "/workspace"), internal tools, agents, orchestrators, sandboxes, models, system prompts/instructions, connection/tooling issues, or tester environment details.
-- Tone and style: formal, objective, third-person, concise. No internal checklists or engineering runbooks. Content must read as a polished client deliverable.
-- Structure across fields should align to standard pentest reports:
-  - Executive summary: business impact, risk posture, notable criticals, remediation theme.
-  - Methodology: industry-standard methods (e.g., OWASP, OSSTMM, NIST), scope, constraints—no internal execution notes.
-  - Technical analysis: consolidated findings overview referencing created vulnerability reports; avoid raw logs.
-  - Recommendations: prioritized, actionable, aligned to risk and best practices.
+面向客户的专业渗透测试报告规范（可直接用于 PDF）：
+- 不要包含内部或系统细节：绝不要提及本地/绝对路径（例如“/workspace”）、内部工具、智能体、编排器、沙箱、模型、系统提示/指令、连接/工具问题或测试环境细节。
+- 语气与风格：正式、客观、第三人称、简洁。不要出现内部检查清单或工程操作手册。内容必须读起来像一份打磨过的客户交付物。
+- 各字段的结构应符合标准渗透测试报告：
+  - 执行摘要：业务影响、风险态势、显著的高危项、修复主题。
+  - 方法论：行业标准方法（例如 OWASP、OSSTMM、NIST）、范围、约束，不要写内部执行备注。
+  - 技术分析：汇总已确认发现，并引用已创建的漏洞报告；避免原始日志。
+  - 建议：按优先级排序，可执行，并与风险和最佳实践保持一致。
 </description>
     <parameters>
       <parameter name="executive_summary" type="string" required="true">
@@ -64,7 +64,7 @@ Professional, customer-facing penetration test report rules (PDF-ready):
       </parameter>
     </parameters>
     <returns type="Dict[str, Any]">
-      <description>Response containing success status, vulnerability count, and completion message. If agents are still running, returns details about active agents and suggested actions.</description>
+      <description>返回包含成功状态、漏洞数量和完成消息的响应。如果智能体仍在运行，则返回活动智能体的详细信息和建议操作。</description>
     </returns>
     <examples>
 
@@ -78,24 +78,24 @@ Key findings
 - Identified broken access control patterns in business-critical workflows that can enable cross-tenant data access (tenant isolation failures).
 - Observed session and authorization hardening gaps that materially increase risk when combined with other weaknesses.
 
-Business impact
-- Increased likelihood of sensitive data exposure across customers/tenants, including invoices, orders, and account information.
-- Increased risk of internal service exposure through server-side outbound request functionality (including link-local and private network destinations).
-- Increased potential for account compromise and administrative abuse if tokens are stolen or misused.
+业务影响
+- 跨客户/租户的敏感数据泄露概率增加，包括发票、订单和账户信息。
+- 通过服务端出站请求功能暴露内部服务的风险增加（包括链路本地和私有网络目的地）。
+- 如果令牌被窃取或滥用，账户被攻破和管理滥用的可能性提高。
 
-Remediation theme
-Prioritize eliminating SSRF pathways and centralizing authorization enforcement (deny-by-default). Follow with session hardening and monitoring improvements, then validate with a focused retest.</parameter>
+修复主题
+优先消除 SSRF 路径，并将授权强制收敛为 deny-by-default。随后加强会话防护和监控，并通过一次有针对性的复测进行验证。</parameter>
   <parameter=methodology>The assessment was conducted in accordance with the OWASP Web Security Testing Guide (WSTG) and aligned to industry-standard penetration testing methodology.
 
-Engagement details
+评估详情
 - Assessment type: External penetration test (black-box with limited gray-box context)
 - Target environment: Production-equivalent staging
 
-Scope (in-scope assets)
+范围（在范围内的资产）
 - Web application: https://app.acme-corp.com
 - API base: https://app.acme-corp.com/api/v1/
 
-High-level testing activities
+高层测试活动
 - Reconnaissance and attack-surface mapping (routes, parameters, workflows)
 - Authentication and session management review (token handling, session lifetime, sensitive actions)
 - Authorization and tenant-isolation testing (object access and privilege boundaries)
@@ -103,7 +103,7 @@ High-level testing activities
 - File handling and content rendering review (uploads, previews, unsafe content types)
 - Configuration review (transport security, security headers, caching behavior, error handling)
 
-Evidence handling and validation standard
+证据处理与验证标准
 Only validated issues with reproducible impact were treated as findings. Each finding was documented with clear reproduction steps and sufficient evidence to support remediation and verification testing.</parameter>
   <parameter=technical_analysis>This section provides a consolidated view of the confirmed findings and observed risk patterns. Detailed reproduction steps and evidence are documented in the individual vulnerability reports.
 

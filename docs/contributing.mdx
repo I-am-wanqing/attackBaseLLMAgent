@@ -1,70 +1,70 @@
 ---
-title: "Contributing"
-description: "Contribute to Strix development"
+title: "贡献指南"
+description: "参与 Strix 开发"
 ---
 
-## Development Setup
+## 开发环境
 
-### Prerequisites
+### 先决条件
 
 - Python 3.12+
 - Docker (running)
 - [uv](https://docs.astral.sh/uv/)
 - Git
 
-### Local Development
+### 本地开发
 
 <Steps>
-  <Step title="Clone the repository">
+  <Step title="克隆仓库">
     ```bash
     git clone https://github.com/usestrix/strix.git
     cd strix
     ```
   </Step>
-  <Step title="Install dependencies">
+  <Step title="安装依赖">
     ```bash
     make setup-dev
 
-    # or manually:
+    # 或者手动：
     uv sync
     uv run pre-commit install
     ```
   </Step>
-  <Step title="Configure LLM">
+  <Step title="配置 LLM">
     ```bash
     export STRIX_LLM="openai/gpt-5.4"
     export LLM_API_KEY="your-api-key"
     ```
   </Step>
-  <Step title="Run Strix">
+  <Step title="运行 Strix">
     ```bash
     uv run strix --target https://example.com
     ```
   </Step>
 </Steps>
 
-## Contributing Skills
+## 贡献技能
 
-Skills are specialized knowledge packages that enhance agent capabilities. They live in `strix/skills/`
+技能是增强智能体能力的专门知识包，位于 `strix/skills/`
 
-### Creating a Skill
+### 创建技能
 
-1. Choose the right category
-2. Create a `.md` file with YAML frontmatter (`name` and `description` fields)
-3. Include practical examples—working payloads, commands, test cases
-4. Provide validation methods to confirm findings
-5. Submit via PR
+1. 选择合适的分类
+2. 创建带有 YAML frontmatter 的 `.md` 文件（包含 `name` 和 `description` 字段）
+3. 提供实用示例，例如可工作的 payload、命令和测试用例
+4. 提供验证方法以确认发现
+5. 通过 PR 提交
 
 ## Contributing Code
 
-### Pull Request Process
+### Pull Request 流程
 
-1. **Create an issue first** — Describe the problem or feature
-2. **Fork and branch** — Work from `main`
-3. **Make changes** — Follow existing code style
-4. **Write tests** — Ensure coverage for new features
-5. **Run checks** — `make check-all` should pass
-6. **Submit PR** — Link to issue and provide context
+1. **先创建 issue** — 描述问题或功能
+2. **Fork 并创建分支** — 基于 `main` 开发
+3. **进行修改** — 遵循现有代码风格
+4. **编写测试** — 确保新功能有覆盖
+5. **运行检查** — `make check-all` 应通过
+6. **提交 PR** — 关联 issue 并提供上下文
 
 ### Code Style
 
@@ -74,7 +74,7 @@ Skills are specialized knowledge packages that enhance agent capabilities. They 
 - Small, focused functions
 - Meaningful variable names
 
-## Reporting Issues
+## 问题反馈
 
 Include:
 
@@ -84,13 +84,13 @@ Include:
 - Full error traceback
 - Steps to reproduce
 
-## Community
+## 社区
 
 <CardGroup cols={2}>
   <Card title="Discord" icon="discord" href="https://discord.gg/strix-ai">
-    Join the community for help and discussion.
+    加入社区以获取帮助和交流。
   </Card>
   <Card title="GitHub Issues" icon="github" href="https://github.com/usestrix/strix/issues">
-    Report bugs and request features.
+    报告 bug 和提出功能需求。
   </Card>
 </CardGroup>

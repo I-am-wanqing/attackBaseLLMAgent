@@ -1,13 +1,13 @@
 ---
 name: fastapi
-description: Security testing playbook for FastAPI applications covering ASGI, dependency injection, and API vulnerabilities
+description: 面向 FastAPI 应用的安全测试技能
 ---
 
 # FastAPI
 
 Security testing for FastAPI/Starlette applications. Focus on dependency injection flaws, middleware gaps, and authorization drift across routers and channels.
 
-## Attack Surface
+## 攻击面
 
 **Core Components**
 - ASGI middlewares: CORS, TrustedHost, ProxyHeaders, Session, exception handlers, lifespan events
@@ -56,7 +56,7 @@ For each route, identify:
 - Route-level dependencies (per endpoint)
 - Which dependencies enforce auth vs just parse input
 
-## Key Vulnerabilities
+## 关键漏洞
 
 ### Authentication & Authorization
 
@@ -132,7 +132,7 @@ Different content types hit different validators or code paths (parser different
 
 ### Server-Side Vulnerabilities
 
-**Template Injection (Jinja2)**
+**模板注入 (Jinja2)**
 ```python
 {{7*7}}  # Arithmetic confirmation
 {{cycler.__init__.__globals__['os'].popen('id').read()}}  # RCE
@@ -165,7 +165,7 @@ Sub-apps at `/admin`, `/static`, `/metrics` may bypass global middlewares. Verif
 ### Alternative Stacks
 
 - If GraphQL (Strawberry/Graphene) is mounted: validate resolver-level authorization, IDOR on node/global IDs
-- If SQLModel/SQLAlchemy present: probe for raw query usage and row-level authorization gaps
+- If SQL模式l/SQLAlchemy present: probe for raw query usage and row-level authorization gaps
 
 ## Bypass Techniques
 
@@ -174,7 +174,7 @@ Sub-apps at `/admin`, `/static`, `/metrics` may bypass global middlewares. Verif
 - Method confusion via proxies (`X-HTTP-Method-Override`)
 - Race windows around dependency-validated state transitions (issue token then mutate with parallel requests)
 
-## Testing Methodology
+## 测试方法
 
 1. **Enumerate** - Fetch OpenAPI, diff with 404-fuzzing for hidden endpoints
 2. **Matrix testing** - Test each route across: unauth/user/admin × HTTP/WebSocket × JSON/form/multipart
@@ -182,7 +182,7 @@ Sub-apps at `/admin`, `/static`, `/metrics` may bypass global middlewares. Verif
 4. **Cross-environment** - Compare dev/stage/prod for middleware and docs exposure differences
 5. **Channel consistency** - Verify same authorization on HTTP and WebSocket for equivalent operations
 
-## Validation Requirements
+## 验证 Requirements
 
 - Side-by-side requests showing unauthorized access (owner vs non-owner, cross-tenant)
 - Cross-channel proof (HTTP and WebSocket for same rule)

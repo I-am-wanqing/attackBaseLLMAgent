@@ -1,11 +1,11 @@
 ---
 title: "Sandbox Tools"
-description: "Pre-installed security tools in the Strix container"
+description: "Strix 容器中预装的安全工具"
 ---
 
-Strix runs inside a Kali Linux-based Docker container with a comprehensive set of security tools pre-installed. The agent can use any of these tools through the [terminal](/tools/terminal).
+Strix 运行在基于 Kali Linux 的 Docker 容器中，预装了完整的安全工具集。智能体可以通过 [终端](/tools/terminal) 使用这些工具。
 
-## Reconnaissance
+## 侦察工具
 
 | Tool                                                       | Description                            |
 | ---------------------------------------------------------- | -------------------------------------- |
@@ -16,7 +16,7 @@ Strix runs inside a Kali Linux-based Docker container with a comprehensive set o
 | [ffuf](https://github.com/ffuf/ffuf)                       | Fast web fuzzer                        |
 | [Nmap](https://nmap.org)                                   | Network scanning and service detection |
 
-## Web Testing
+## Web 测试
 
 | Tool                                                   | Description                      |
 | ------------------------------------------------------ | -------------------------------- |
@@ -25,16 +25,16 @@ Strix runs inside a Kali Linux-based Docker container with a comprehensive set o
 | [wafw00f](https://github.com/EnableSecurity/wafw00f)   | WAF fingerprinting               |
 | [GoSpider](https://github.com/jaeles-project/gospider) | Web spider for link extraction   |
 
-## Automated Scanners
+## 自动化扫描器
 
 | Tool                                                 | Description                                        |
 | ---------------------------------------------------- | -------------------------------------------------- |
 | [Nuclei](https://github.com/projectdiscovery/nuclei) | Template-based vulnerability scanner               |
 | [SQLMap](https://sqlmap.org)                         | Automatic SQL injection detection and exploitation |
-| [Wapiti](https://wapiti-scanner.github.io)           | Web application vulnerability scanner              |
+| [Wapiti](https://wapiti-scanner.github.io)           | Web 应用漏洞扫描器              |
 | [ZAP](https://zaproxy.org)                           | OWASP Zed Attack Proxy                             |
 
-## JavaScript Analysis
+## JavaScript 分析
 
 | Tool                                                     | Description                    |
 | -------------------------------------------------------- | ------------------------------ |
@@ -45,7 +45,7 @@ Strix runs inside a Kali Linux-based Docker container with a comprehensive set o
 | [js-beautify](https://github.com/beautifier/js-beautify) | JavaScript deobfuscation       |
 | [JSHint](https://jshint.com)                             | JavaScript code quality tool   |
 
-## Source-Aware Analysis
+## 源码感知分析
 
 | Tool                                                    | Description                                   |
 | ------------------------------------------------------- | --------------------------------------------- |
@@ -54,38 +54,38 @@ Strix runs inside a Kali Linux-based Docker container with a comprehensive set o
 | [Tree-sitter](https://tree-sitter.github.io/tree-sitter/) | Syntax tree parsing and symbol extraction (Java/JS/TS/Python/Go/Bash/JSON/YAML grammars pre-configured) |
 | [Bandit](https://bandit.readthedocs.io)                | Python security linter                        |
 
-## Secret Detection
+## 密钥检测
 
 | Tool                                                        | Description                           |
 | ----------------------------------------------------------- | ------------------------------------- |
 | [TruffleHog](https://github.com/trufflesecurity/trufflehog) | Find secrets in code and history      |
 | [Gitleaks](https://github.com/gitleaks/gitleaks)            | Detect hardcoded secrets in repositories |
 
-## Authentication Testing
+## 认证测试
 
 | Tool                                                         | Description                        |
 | ------------------------------------------------------------ | ---------------------------------- |
 | [jwt_tool](https://github.com/ticarpi/jwt_tool)              | JWT token testing and exploitation |
 | [Interactsh](https://github.com/projectdiscovery/interactsh) | Out-of-band interaction detection  |
 
-## Container & Supply Chain
+## 容器与供应链
 
 | Tool                       | Description                                    |
 | -------------------------- | ---------------------------------------------- |
 | [Trivy](https://trivy.dev) | Filesystem/container scanning for vulns, misconfigurations, secrets, and licenses |
 
-## HTTP Proxy
+## HTTP 代理
 
 | Tool                      | Description                                   |
 | ------------------------- | --------------------------------------------- |
-| [Caido](https://caido.io) | Modern HTTP proxy for interception and replay |
+| [Caido](https://caido.io) | 用于拦截与重放的 HTTP 代理 |
 
-## Browser
+## 浏览器
 
 | Tool                                 | Description                 |
 | ------------------------------------ | --------------------------- |
 | [Playwright](https://playwright.dev) | Headless browser automation |
 
 <Note>
-  All tools are pre-configured and ready to use. The agent selects the appropriate tool based on the vulnerability being tested.
+  所有工具都已预配置并可直接使用。智能体会根据正在测试的漏洞选择合适的工具。
 </Note>

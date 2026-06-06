@@ -1,9 +1,9 @@
 ---
 name: nuclei
-description: Exact Nuclei command structure, template selection, and bounded high-throughput execution controls.
+description: Nuclei 漏洞模板扫描工具的使用指南
 ---
 
-# Nuclei CLI Playbook
+# Nuclei 工具指南
 
 Official docs:
 - https://docs.projectdiscovery.io/opensource/nuclei/running

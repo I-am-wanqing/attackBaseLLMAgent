@@ -1,19 +1,19 @@
 ---
 name: kubernetes
-description: Kubernetes cluster security testing - RBAC, API exposure, container escapes, network policies, secrets, and supply chain
+description: 面向 Kubernetes 环境的云原生安全测试技能
 ---
 
-# Kubernetes Security Testing
+# Kubernetes 云平台技能
 
 Kubernetes clusters expose a large attack surface through their API server, kubelet, etcd, and workload configurations. Misconfigurations in RBAC, network policies, and container security contexts are common and frequently lead to privilege escalation, lateral movement, and cluster takeover. This skill covers direct cluster access scenarios. For SSRF-mediated Kubernetes access, see the ssrf skill.
 
-## Attack Surface
+## 攻击面
 
 **Scope**
 - Kubernetes API server (typically port 6443 or 443)
 - Kubelet API (port 10250 authenticated, port 10255 deprecated read-only)
 - etcd (port 2379/2380, stores all cluster state including secrets)
-- Cloud provider metadata endpoints reachable from pods
+- 云端 provider metadata endpoints reachable from pods
 - Container runtimes (containerd, CRI-O) via socket access
 - Service mesh sidecars and ingress controllers
 
@@ -30,7 +30,7 @@ Kubernetes clusters expose a large attack surface through their API server, kube
 - OIDC tokens, webhook tokens, cloud provider IAM-to-K8s mappings (EKS IRSA, GKE Workload Identity)
 - Anonymous access (enabled by default; unauthenticated requests become `system:anonymous` / `system:unauthenticated`, with only explicitly bound RBAC permissions such as public discovery/info roles)
 
-## Key Vulnerabilities
+## 关键漏洞
 
 ### RBAC Misconfigurations
 
@@ -169,7 +169,7 @@ kubectl get pods -o json | jq '.items[].spec.containers[].image' | grep ':latest
 - If you can reach a node's kubelet, you can exec into any pod on that node
 - Anonymous kubelet access: `curl -sk https://<node>:10250/runningpods/`
 
-## Testing Methodology
+## 测试方法
 
 1. **Enumerate access** - Determine current auth context: `kubectl auth whoami`, `kubectl auth can-i --list`
 2. **Map the cluster** - List namespaces, pods, services, nodes, and their labels: `kubectl get all -A`
@@ -181,7 +181,7 @@ kubectl get pods -o json | jq '.items[].spec.containers[].image' | grep ':latest
 8. **Escalate** - Chain findings: SA token + permissive RBAC -> create privileged pod -> node access -> cluster-admin
 9. **Benchmark** - Run `kube-bench` for CIS compliance, `kubesec` for workload hardening scores, `trivy` for image CVEs
 
-## Validation
+## 验证
 
 1. Prove access to resources beyond intended scope (cross-namespace secret read, exec into another team's pod)
 2. Demonstrate privilege escalation path from initial access to elevated permissions (SA token -> cluster-admin)
@@ -189,7 +189,7 @@ kubectl get pods -o json | jq '.items[].spec.containers[].image' | grep ':latest
 4. For container escapes, demonstrate host filesystem read or host process visibility without destructive actions
 5. Confirm NetworkPolicy gaps by showing successful cross-namespace or metadata endpoint connections
 
-## False Positives
+## 误报
 
 - `kubectl auth can-i` returning `yes` for service accounts that are restricted by admission controllers or OPA policies
 - Kubelet port 10250 reachable but returning 401/403 (authentication is working correctly)
@@ -197,16 +197,16 @@ kubectl get pods -o json | jq '.items[].spec.containers[].image' | grep ':latest
 - Service account tokens mounted but unused, with admission controllers preventing their abuse
 - Images using `:latest` tag but pulled from a private registry with immutable tags enabled
 
-## Impact
+## 影响
 
 - Full cluster compromise from a single misconfigured RBAC binding or service account
 - Lateral movement across namespaces and workloads via pod-to-pod communication
-- Cloud account compromise via metadata endpoint access from pods (AWS keys, GCP tokens, Azure MSI)
+- 云端 account compromise via metadata endpoint access from pods (AWS keys, GCP tokens, Azure MSI)
 - Supply chain attacks via compromised base images or Helm chart hooks
 - Data exfiltration from secrets, ConfigMaps, and persistent volumes
 - Denial of service through resource exhaustion in clusters without resource quotas
 
-## Pro Tips
+## 实战技巧
 
 1. Start with `kubectl auth can-i --list` to understand your blast radius before probing anything
 2. Service account tokens in `/var/run/secrets/` are your first pivot point from any compromised pod
@@ -218,6 +218,6 @@ kubectl get pods -o json | jq '.items[].spec.containers[].image' | grep ':latest
 8. DNS from inside a pod reveals service names: `dig +short SRV *.*.svc.cluster.local`
 9. When testing RBAC, try `--as=` impersonation to check what other service accounts can do
 
-## Summary
+## 总结
 
 Kubernetes security failures typically chain: a single misconfigured role binding or missing network policy enables lateral movement, which leads to secret extraction, which leads to cloud credential access. Test the chain, not just individual findings. Start from the auth context you have, enumerate what it can reach, and escalate methodically.

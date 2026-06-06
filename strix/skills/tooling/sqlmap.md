@@ -1,9 +1,9 @@
 ---
 name: sqlmap
-description: sqlmap target syntax, non-interactive execution, and common validation/enumeration workflows.
+description: sqlmap SQL 注入测试工具的使用指南
 ---
 
-# sqlmap CLI Playbook
+# sqlmap 工具指南
 
 Official docs:
 - https://github.com/sqlmapproject/sqlmap/wiki/usage

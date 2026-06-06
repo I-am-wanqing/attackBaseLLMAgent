@@ -1,13 +1,13 @@
 ---
 name: broken-function-level-authorization
-description: BFLA testing for action-level authorization failures across endpoints, admin functions, and API operations
+description: 功能级授权安全测试技能
 ---
 
-# Broken Function Level Authorization (BFLA)
+# 功能级授权缺陷
 
 BFLA is action-level authorization failure: callers invoke functions (endpoints, mutations, admin tools) they are not entitled to. It appears when enforcement differs across transports, gateways, roles, or when services trust client hints. Bind subject × action at the service that performs the action.
 
-## Attack Surface
+## 攻击面
 
 - Vertical authz: privileged/admin/staff-only actions reachable by basic users
 - Feature gates: toggles enforced at edge/UI, not at core services
@@ -38,7 +38,7 @@ BFLA is action-level authorization failure: callers invoke functions (endpoints,
 - Actions succeed via background jobs when direct call is denied
 - Changing only headers (role/org) alters access without token change
 
-## Key Vulnerabilities
+## 关键漏洞
 
 ### Verb Drift and Aliases
 
@@ -113,7 +113,7 @@ mutation Promote($id:ID!){
 
 - Cached authorization decisions at edge leading to cross-user reuse; test with Vary and session swaps
 
-## Testing Methodology
+## 测试方法
 
 1. **Build Actor × Action matrix** - Unauth, basic, premium, staff/admin; enumerate actions per role
 2. **Obtain tokens/sessions** - For each role
@@ -121,27 +121,27 @@ mutation Promote($id:ID!){
 4. **Vary headers and selectors** - Org/tenant/project; test behind gateway vs direct-to-service
 5. **Include background flows** - Job creation/finalization, webhooks, queues; confirm re-validation
 
-## Validation
+## 验证
 
 1. Show a lower-privileged principal successfully invokes a restricted action (same inputs) while the proper role succeeds and another lower role fails
 2. Provide evidence across at least two transports or encodings demonstrating inconsistent enforcement
 3. Demonstrate that removing/altering client-side gates (buttons/flags) does not affect backend success
 4. Include durable state change proof: before/after snapshots, audit logs, and authoritative sources
 
-## False Positives
+## 误报
 
 - Read-only endpoints mislabeled as admin but publicly documented
 - Feature toggles intentionally open to all roles for preview/beta with clear policy
 - Simulated environments where admin endpoints are stubbed with no side effects
 
-## Impact
+## 影响
 
 - Privilege escalation to admin/staff actions
 - Monetary/state impact: refunds/credits/approvals without authorization
 - Tenant-wide configuration changes, impersonation, or data deletion
 - Compliance and audit violations due to bypassed approval workflows
 
-## Pro Tips
+## 实战技巧
 
 1. Start from the role matrix; test every action with basic vs admin tokens across REST/GraphQL/gRPC
 2. Diff middleware stacks between routes; weak chains often exist on legacy or alternate encodings
@@ -149,6 +149,6 @@ mutation Promote($id:ID!){
 4. Treat jobs/webhooks as first-class: finalize/approve must re-check the actor
 5. Prefer minimal PoCs: one request that flips a privileged field or invokes an admin method with a basic token
 
-## Summary
+## 总结
 
 Authorization must bind the actor to the specific action at the service boundary on every request and message. UI gates, gateways, or prior steps do not substitute for function-level checks.

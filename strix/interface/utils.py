@@ -21,7 +21,7 @@ from rich.panel import Panel
 from rich.text import Text
 
 
-# Token formatting utilities
+# 令牌格式化工具
 def format_token_count(count: float) -> str:
     count = int(count)
     if count >= 1_000_000:
@@ -31,7 +31,7 @@ def format_token_count(count: float) -> str:
     return str(count)
 
 
-# Display utilities
+# 显示工具
 def get_severity_color(severity: str) -> str:
     severity_colors = {
         "critical": "#dc2626",
@@ -56,54 +56,54 @@ def get_cvss_color(cvss_score: float) -> str:
 
 
 def format_vulnerability_report(report: dict[str, Any]) -> Text:  # noqa: PLR0912, PLR0915
-    """Format a vulnerability report for CLI display with all rich fields."""
+    """将漏洞报告格式化为可在 CLI 中显示的富文本。"""
     field_style = "bold #4ade80"
 
     text = Text()
 
     title = report.get("title", "")
     if title:
-        text.append("Vulnerability Report", style="bold #ea580c")
+        text.append("漏洞报告", style="bold #ea580c")
         text.append("\n\n")
-        text.append("Title: ", style=field_style)
+        text.append("标题：", style=field_style)
         text.append(title)
 
     severity = report.get("severity", "")
     if severity:
         text.append("\n\n")
-        text.append("Severity: ", style=field_style)
+        text.append("严重性：", style=field_style)
         severity_color = get_severity_color(severity.lower())
         text.append(severity.upper(), style=f"bold {severity_color}")
 
     cvss = report.get("cvss")
     if cvss is not None:
         text.append("\n\n")
-        text.append("CVSS Score: ", style=field_style)
+        text.append("CVSS 评分：", style=field_style)
         cvss_color = get_cvss_color(cvss)
         text.append(f"{cvss:.1f}", style=f"bold {cvss_color}")
 
     target = report.get("target")
     if target:
         text.append("\n\n")
-        text.append("Target: ", style=field_style)
+        text.append("目标：", style=field_style)
         text.append(target)
 
     endpoint = report.get("endpoint")
     if endpoint:
         text.append("\n\n")
-        text.append("Endpoint: ", style=field_style)
+        text.append("端点：", style=field_style)
         text.append(endpoint)
 
     method = report.get("method")
     if method:
         text.append("\n\n")
-        text.append("Method: ", style=field_style)
+        text.append("方法：", style=field_style)
         text.append(method)
 
     cve = report.get("cve")
     if cve:
         text.append("\n\n")
-        text.append("CVE: ", style=field_style)
+        text.append("CVE：", style=field_style)
         text.append(cve)
 
     cvss_breakdown = report.get("cvss_breakdown", {})
@@ -127,51 +127,51 @@ def format_vulnerability_report(report: dict[str, Any]) -> Text:  # noqa: PLR091
         if cvss_breakdown.get("availability"):
             cvss_parts.append(f"A:{cvss_breakdown['availability']}")
         if cvss_parts:
-            text.append("CVSS Vector: ", style=field_style)
+            text.append("CVSS 向量：", style=field_style)
             text.append("/".join(cvss_parts), style="dim")
 
     description = report.get("description")
     if description:
         text.append("\n\n")
-        text.append("Description", style=field_style)
+        text.append("描述", style=field_style)
         text.append("\n")
         text.append(description)
 
     impact = report.get("impact")
     if impact:
         text.append("\n\n")
-        text.append("Impact", style=field_style)
+        text.append("影响", style=field_style)
         text.append("\n")
         text.append(impact)
 
     technical_analysis = report.get("technical_analysis")
     if technical_analysis:
         text.append("\n\n")
-        text.append("Technical Analysis", style=field_style)
+        text.append("技术分析", style=field_style)
         text.append("\n")
         text.append(technical_analysis)
 
     poc_description = report.get("poc_description")
     if poc_description:
         text.append("\n\n")
-        text.append("PoC Description", style=field_style)
+        text.append("概念验证说明", style=field_style)
         text.append("\n")
         text.append(poc_description)
 
     poc_script_code = report.get("poc_script_code")
     if poc_script_code:
         text.append("\n\n")
-        text.append("PoC Code", style=field_style)
+        text.append("概念验证代码", style=field_style)
         text.append("\n")
         text.append(poc_script_code, style="dim")
 
     code_locations = report.get("code_locations")
     if code_locations:
         text.append("\n\n")
-        text.append("Code Locations", style=field_style)
+        text.append("代码位置", style=field_style)
         for i, loc in enumerate(code_locations):
             text.append("\n\n")
-            text.append(f"  Location {i + 1}: ", style="dim")
+            text.append(f"  位置 {i + 1}: ", style="dim")
             text.append(loc.get("file", "unknown"), style="bold")
             start = loc.get("start_line")
             end = loc.get("end_line")
@@ -186,7 +186,7 @@ def format_vulnerability_report(report: dict[str, Any]) -> Text:  # noqa: PLR091
                 text.append("\n  ")
                 text.append(loc["snippet"], style="dim")
             if loc.get("fix_before") or loc.get("fix_after"):
-                text.append("\n  Fix:")
+                text.append("\n  修复：")
                 if loc.get("fix_before"):
                     text.append("\n  - ", style="dim")
                     text.append(loc["fix_before"], style="dim")
@@ -197,7 +197,7 @@ def format_vulnerability_report(report: dict[str, Any]) -> Text:  # noqa: PLR091
     remediation_steps = report.get("remediation_steps")
     if remediation_steps:
         text.append("\n\n")
-        text.append("Remediation", style=field_style)
+        text.append("修复建议", style=field_style)
         text.append("\n")
         text.append(remediation_steps)
 
@@ -205,7 +205,7 @@ def format_vulnerability_report(report: dict[str, Any]) -> Text:  # noqa: PLR091
 
 
 def _build_vulnerability_stats(stats_text: Text, tracer: Any) -> None:
-    """Build vulnerability section of stats text."""
+    """构建统计文本中的漏洞部分。"""
     vuln_count = len(tracer.vulnerability_reports)
 
     if vuln_count > 0:
@@ -215,7 +215,7 @@ def _build_vulnerability_stats(stats_text: Text, tracer: Any) -> None:
             if severity in severity_counts:
                 severity_counts[severity] += 1
 
-        stats_text.append("Vulnerabilities  ", style="bold red")
+        stats_text.append("漏洞  ", style="bold red")
 
         severity_parts = []
         for severity in ["critical", "high", "medium", "low", "info"]:
@@ -237,43 +237,43 @@ def _build_vulnerability_stats(stats_text: Text, tracer: Any) -> None:
         stats_text.append(")", style="dim white")
         stats_text.append("\n")
     else:
-        stats_text.append("Vulnerabilities  ", style="bold #22c55e")
+        stats_text.append("漏洞  ", style="bold #22c55e")
         stats_text.append("0", style="bold white")
-        stats_text.append(" (No exploitable vulnerabilities detected)", style="dim green")
+        stats_text.append("（未检测到可利用的漏洞）", style="dim green")
         stats_text.append("\n")
 
 
 def _build_llm_stats(stats_text: Text, total_stats: dict[str, Any]) -> None:
-    """Build LLM usage section of stats text."""
+    """构建统计文本中的 LLM 使用部分。"""
     if total_stats["requests"] > 0:
         stats_text.append("\n")
-        stats_text.append("Input Tokens ", style="dim")
+        stats_text.append("输入令牌 ", style="dim")
         stats_text.append(format_token_count(total_stats["input_tokens"]), style="white")
 
         if total_stats["cached_tokens"] > 0:
             stats_text.append("  ·  ", style="dim white")
-            stats_text.append("Cached Tokens ", style="dim")
+            stats_text.append("缓存令牌 ", style="dim")
             stats_text.append(format_token_count(total_stats["cached_tokens"]), style="white")
 
         stats_text.append("  ·  ", style="dim white")
-        stats_text.append("Output Tokens ", style="dim")
+        stats_text.append("输出令牌 ", style="dim")
         stats_text.append(format_token_count(total_stats["output_tokens"]), style="white")
 
         if total_stats["cost"] > 0:
             stats_text.append(" · ", style="dim white")
-            stats_text.append("Cost ", style="dim")
+            stats_text.append("费用 ", style="dim")
             stats_text.append(f"${total_stats['cost']:.4f}", style="bold #fbbf24")
     else:
         stats_text.append("\n")
-        stats_text.append("Cost ", style="dim")
+        stats_text.append("费用 ", style="dim")
         stats_text.append("$0.0000 ", style="#fbbf24")
         stats_text.append("· ", style="dim white")
-        stats_text.append("Tokens ", style="dim")
+        stats_text.append("令牌 ", style="dim")
         stats_text.append("0", style="white")
 
 
 def build_final_stats_text(tracer: Any) -> Text:
-    """Build stats text for final output with detailed messages and LLM usage."""
+    """构建最终输出的统计文本，包含详细信息和 LLM 使用情况。"""
     stats_text = Text()
     if not tracer:
         return stats_text
@@ -283,11 +283,11 @@ def build_final_stats_text(tracer: Any) -> Text:
     tool_count = tracer.get_real_tool_count()
     agent_count = len(tracer.agents)
 
-    stats_text.append("Agents", style="dim")
+    stats_text.append("智能体", style="dim")
     stats_text.append("  ")
     stats_text.append(str(agent_count), style="bold white")
     stats_text.append("  ·  ", style="dim white")
-    stats_text.append("Tools", style="dim")
+    stats_text.append("工具", style="dim")
     stats_text.append("  ")
     stats_text.append(str(tool_count), style="bold white")
 
@@ -304,8 +304,8 @@ def build_live_stats_text(tracer: Any, agent_config: dict[str, Any] | None = Non
 
     if agent_config:
         llm_config = agent_config["llm_config"]
-        model = getattr(llm_config, "model_name", "Unknown")
-        stats_text.append("Model ", style="dim")
+        model = getattr(llm_config, "model_name", "未知")
+        stats_text.append("模型 ", style="dim")
         stats_text.append(model, style="white")
         stats_text.append("\n")
 
@@ -313,7 +313,7 @@ def build_live_stats_text(tracer: Any, agent_config: dict[str, Any] | None = Non
     tool_count = tracer.get_real_tool_count()
     agent_count = len(tracer.agents)
 
-    stats_text.append("Vulnerabilities ", style="dim")
+    stats_text.append("漏洞 ", style="dim")
     stats_text.append(f"{vuln_count}", style="white")
     stats_text.append("\n")
     if vuln_count > 0:
@@ -340,31 +340,49 @@ def build_live_stats_text(tracer: Any, agent_config: dict[str, Any] | None = Non
 
         stats_text.append("\n")
 
-    stats_text.append("Agents ", style="dim")
+    stats_text.append("智能体 ", style="dim")
     stats_text.append(str(agent_count), style="white")
     stats_text.append("  ·  ", style="dim white")
-    stats_text.append("Tools ", style="dim")
+    stats_text.append("工具 ", style="dim")
     stats_text.append(str(tool_count), style="white")
+
+    graph_summary = getattr(tracer, "blackbox_graph_summary", None)
+    if graph_summary:
+        coverage = graph_summary.get("coverage", {})
+        stats_text.append("\n")
+        stats_text.append("状态图 ", style="dim")
+        stats_text.append(
+            f"事实 {graph_summary.get('facts', 0)} · "
+            f"待执行 {graph_summary.get('pending_intents', 0)} · "
+            f"运行 {graph_summary.get('running_intents', 0)}",
+            style="white",
+        )
+        stats_text.append("\n")
+        stats_text.append("覆盖 ", style="dim")
+        stats_text.append(
+            f"{coverage.get('complete', 0) + coverage.get('blocked', 0)}/{coverage.get('total', 0)}",
+            style="white",
+        )
 
     llm_stats = tracer.get_total_llm_stats()
     total_stats = llm_stats["total"]
 
     stats_text.append("\n")
 
-    stats_text.append("Input Tokens ", style="dim")
+    stats_text.append("输入令牌 ", style="dim")
     stats_text.append(format_token_count(total_stats["input_tokens"]), style="white")
 
     stats_text.append("  ·  ", style="dim white")
-    stats_text.append("Cached Tokens ", style="dim")
+    stats_text.append("缓存令牌 ", style="dim")
     stats_text.append(format_token_count(total_stats["cached_tokens"]), style="white")
 
     stats_text.append("\n")
 
-    stats_text.append("Output Tokens ", style="dim")
+    stats_text.append("输出令牌 ", style="dim")
     stats_text.append(format_token_count(total_stats["output_tokens"]), style="white")
 
     stats_text.append("  ·  ", style="dim white")
-    stats_text.append("Cost ", style="dim")
+    stats_text.append("费用 ", style="dim")
     stats_text.append(f"${total_stats['cost']:.4f}", style="#fbbf24")
 
     return stats_text
@@ -377,7 +395,7 @@ def build_tui_stats_text(tracer: Any, agent_config: dict[str, Any] | None = None
 
     if agent_config:
         llm_config = agent_config["llm_config"]
-        model = getattr(llm_config, "model_name", "Unknown")
+        model = getattr(llm_config, "model_name", "未知")
         stats_text.append(model, style="white")
 
     llm_stats = tracer.get_total_llm_stats()
@@ -391,6 +409,18 @@ def build_tui_stats_text(tracer: Any, agent_config: dict[str, Any] | None = None
     if total_stats["cost"] > 0:
         stats_text.append(" · ", style="white")
         stats_text.append(f"${total_stats['cost']:.2f}", style="white")
+
+    graph_summary = getattr(tracer, "blackbox_graph_summary", None)
+    if graph_summary:
+        coverage = graph_summary.get("coverage", {})
+        covered = coverage.get("complete", 0) + coverage.get("blocked", 0)
+        stats_text.append("\n")
+        stats_text.append(
+            f"Graph facts {graph_summary.get('facts', 0)} · "
+            f"pending {graph_summary.get('pending_intents', 0)} · "
+            f"coverage {covered}/{coverage.get('total', 0)}",
+            style="white",
+        )
 
     caido_url = getattr(tracer, "caido_url", None)
     if caido_url:
@@ -461,7 +491,7 @@ def generate_run_name(targets_info: list[dict[str, Any]] | None = None) -> str:
     return f"{slug}_{random_suffix}"
 
 
-# Target processing utilities
+# 目标处理工具
 
 _SUPPORTED_SCOPE_MODES = {"auto", "diff", "full"}
 _MAX_FILES_PER_SECTION = 120
@@ -679,8 +709,8 @@ def _resolve_base_ref(repo_path: Path, diff_base: str | None, env: dict[str, str
         return "refs/remotes/origin/master"
 
     raise ValueError(
-        "Unable to resolve a base ref for diff-scope. Pass --diff-base explicitly "
-        "(for example: --diff-base origin/main)."
+            "无法为 diff-scope 解析基准引用。请显式传入 --diff-base "
+            "（例如：--diff-base origin/main）。"
     )
 
 
@@ -825,35 +855,35 @@ def _truncate_file_list(
 
 def build_diff_scope_instruction(scopes: list[RepoDiffScope]) -> str:  # noqa: PLR0912
     lines = [
-        "The user is requesting a review of a Pull Request.",
-        "Instruction: Direct your analysis primarily at the changes in the listed files. "
-        "You may reference other files in the repository for context (imports, definitions, "
-        "usage), but report findings only if they relate to the listed changes.",
-        "For Added files, review the entire file content.",
-        "For Modified files, focus primarily on the changed areas.",
+        "用户正在请求对一个 Pull Request 进行审查。",
+        "说明：请将分析重点放在所列文件的变更上。"
+        "你可以引用仓库中的其他文件作为上下文（导入、定义、"
+        "用法），但只有在发现与你列出的变更相关时才报告。",
+        "对于新增文件，请审查整个文件内容。",
+        "对于修改文件，请重点关注变更区域。",
     ]
 
     for scope in scopes:
         repo_name = scope.workspace_subdir or Path(scope.source_path).name or "repository"
         lines.append("")
-        lines.append(f"Repository Scope: {repo_name}")
-        lines.append(f"Base reference: {scope.base_ref}")
-        lines.append(f"Merge base: {scope.merge_base}")
+        lines.append(f"仓库范围：{repo_name}")
+        lines.append(f"基准引用：{scope.base_ref}")
+        lines.append(f"合并基点：{scope.merge_base}")
 
         focus_files, focus_truncated = _truncate_file_list(scope.analyzable_files)
         scope.truncated_sections["analyzable_files"] = focus_truncated
         if focus_files:
-            lines.append("Primary Focus (changed files to analyze):")
+            lines.append("主要关注点（需要分析的变更文件）：")
             lines.extend(f"- {path}" for path in focus_files)
             if focus_truncated:
                 lines.append(f"- ... ({len(scope.analyzable_files) - len(focus_files)} more files)")
         else:
-            lines.append("Primary Focus: No analyzable changed files detected.")
+            lines.append("主要关注点：未检测到可分析的变更文件。")
 
         added_files, added_truncated = _truncate_file_list(scope.added_files)
         scope.truncated_sections["added_files"] = added_truncated
         if added_files:
-            lines.append("Added files (review entire file):")
+            lines.append("新增文件（审查整个文件）：")
             lines.extend(f"- {path}" for path in added_files)
             if added_truncated:
                 lines.append(f"- ... ({len(scope.added_files) - len(added_files)} more files)")
@@ -861,7 +891,7 @@ def build_diff_scope_instruction(scopes: list[RepoDiffScope]) -> str:  # noqa: P
         modified_files, modified_truncated = _truncate_file_list(scope.modified_files)
         scope.truncated_sections["modified_files"] = modified_truncated
         if modified_files:
-            lines.append("Modified files (focus on changes):")
+            lines.append("修改文件（重点关注变更）：")
             lines.extend(f"- {path}" for path in modified_files)
             if modified_truncated:
                 lines.append(
@@ -878,13 +908,13 @@ def build_diff_scope_instruction(scopes: list[RepoDiffScope]) -> str:  # noqa: P
                     rename_lines.append(f"- {old_path} -> {new_path} (similarity {similarity}%)")
                 else:
                     rename_lines.append(f"- {old_path} -> {new_path}")
-            lines.append("Renamed files:")
+            lines.append("重命名文件：")
             lines.extend(rename_lines)
 
         deleted_files, deleted_truncated = _truncate_file_list(scope.deleted_files)
         scope.truncated_sections["deleted_files"] = deleted_truncated
         if deleted_files:
-            lines.append("Note: These files were deleted (context only, not analyzable):")
+            lines.append("说明：这些文件已被删除（仅作上下文，不可分析）：")
             lines.extend(f"- {path}" for path in deleted_files)
             if deleted_truncated:
                 lines.append(f"- ... ({len(scope.deleted_files) - len(deleted_files)} more files)")
@@ -926,12 +956,11 @@ def _resolve_repo_diff_scope(
     repo_path = Path(source_path)
 
     if not _is_git_repo(repo_path):
-        raise ValueError(f"Source is not a git repository: {source_path}")
+        raise ValueError(f"源不是 Git 仓库：{source_path}")
 
     if _is_repo_shallow(repo_path):
         raise ValueError(
-            "Strix requires full git history for diff-scope. Please set fetch-depth: 0 "
-            "in your CI config."
+            "Strix 的 diff-scope 需要完整的 Git 历史记录。请在 CI 配置中设置 fetch-depth: 0。"
         )
 
     base_ref = _resolve_base_ref(repo_path, diff_base, env)
@@ -939,15 +968,15 @@ def _resolve_repo_diff_scope(
     if merge_base_result.returncode != 0:
         stderr = merge_base_result.stderr.strip()
         raise ValueError(
-            f"Unable to compute merge-base against '{base_ref}' for '{source_path}'. "
-            f"{stderr or 'Ensure the base branch history is fetched and reachable.'}"
+            f"无法针对“{source_path}”计算相对于“{base_ref}”的 merge-base。"
+            f"{stderr or '请确保已拉取并可访问基准分支历史。'}"
         )
 
     merge_base = merge_base_result.stdout.strip()
     if not merge_base:
         raise ValueError(
-            f"Unable to compute merge-base against '{base_ref}' for '{source_path}'. "
-            "Ensure the base branch history is fetched and reachable."
+            f"无法针对“{source_path}”计算相对于“{base_ref}”的 merge-base。"
+            "请确保已拉取并可访问基准分支历史。"
         )
 
     diff_result = _run_git_command_raw(
@@ -965,8 +994,8 @@ def _resolve_repo_diff_scope(
     if diff_result.returncode != 0:
         stderr = diff_result.stderr.decode("utf-8", errors="replace").strip()
         raise ValueError(
-            f"Unable to resolve changed files for '{source_path}'. "
-            f"{stderr or 'Ensure the repository has enough history for diff-scope.'}"
+            f"无法解析“{source_path}”中的变更文件。"
+            f"{stderr or '请确保仓库具有足够的历史记录以供 diff-scope 使用。'}"
         )
 
     entries = _parse_name_status_z(diff_result.stdout)
@@ -993,7 +1022,7 @@ def resolve_diff_scope_context(
     env: dict[str, str] | None = None,
 ) -> DiffScopeResult:
     if scope_mode not in _SUPPORTED_SCOPE_MODES:
-        raise ValueError(f"Unsupported scope mode: {scope_mode}")
+        raise ValueError(f"不支持的范围模式：{scope_mode}")
 
     env_map = dict(os.environ if env is None else env)
 
@@ -1014,7 +1043,7 @@ def resolve_diff_scope_context(
             )
 
     if not local_sources:
-        raise ValueError("Diff-scope is active, but no local repository targets were provided.")
+        raise ValueError("diff-scope 已启用，但未提供本地仓库目标。")
 
     repo_scopes: list[RepoDiffScope] = []
     skipped_non_git: list[str] = []
@@ -1044,8 +1073,8 @@ def resolve_diff_scope_context(
             return DiffScopeResult(active=False, mode=scope_mode, metadata=metadata)
 
         raise ValueError(
-            "Diff-scope is active, but no Git repositories were found. "
-            "Use --scope-mode full to disable diff-scope for this run."
+            "diff-scope 已启用，但未找到 Git 仓库。"
+            "使用 --scope-mode full 可在本次运行中关闭 diff-scope。"
         )
 
     instruction_block = build_diff_scope_instruction(repo_scopes)
@@ -1084,7 +1113,7 @@ def _is_http_git_repo(url: str) -> bool:
 
 def infer_target_type(target: str) -> tuple[str, dict[str, str]]:  # noqa: PLR0911, PLR0912
     if not target or not isinstance(target, str):
-        raise ValueError("Target must be a non-empty string")
+        raise ValueError("目标必须是非空字符串")
 
     target = target.strip()
 
@@ -1119,9 +1148,9 @@ def infer_target_type(target: str) -> tuple[str, dict[str, str]]:  # noqa: PLR09
         if path.exists():
             if path.is_dir():
                 return "local_code", {"target_path": str(path.resolve())}
-            raise ValueError(f"Path exists but is not a directory: {target}")
+            raise ValueError(f"路径存在，但不是目录：{target}")
     except (OSError, RuntimeError) as e:
-        raise ValueError(f"Invalid path: {target} - {e!s}") from e
+        raise ValueError(f"无效路径：{target} - {e!s}") from e
 
     if target.endswith(".git"):
         return "repository", {"target_repo": target}
@@ -1140,13 +1169,13 @@ def infer_target_type(target: str) -> tuple[str, dict[str, str]]:  # noqa: PLR09
             return "web_application", {"target_url": f"https://{target}"}
 
     raise ValueError(
-        f"Invalid target: {target}\n"
-        "Target must be one of:\n"
-        "- A valid URL (http:// or https://)\n"
-        "- A Git repository URL (https://host/org/repo or git@host:org/repo.git)\n"
-        "- A local directory path\n"
-        "- A domain name (e.g., example.com)\n"
-        "- An IP address (e.g., 192.168.1.10)"
+        f"无效目标：{target}\n"
+        "目标必须属于以下之一：\n"
+        "- 有效 URL（http:// 或 https://）\n"
+        "- Git 仓库 URL（https://host/org/repo 或 git@host:org/repo.git）\n"
+        "- 本地目录路径\n"
+        "- 域名（例如：example.com）\n"
+        "- IP 地址（例如：192.168.1.10）"
     )
 
 
@@ -1276,7 +1305,7 @@ def clone_repository(repo_url: str, run_name: str, dest_name: str | None = None)
 
     git_executable = shutil.which("git")
     if git_executable is None:
-        raise FileNotFoundError("Git executable not found in PATH")
+        raise FileNotFoundError("在 PATH 中未找到 Git 可执行文件")
 
     temp_dir = Path(tempfile.gettempdir()) / "strix_repos" / run_name
     temp_dir.mkdir(parents=True, exist_ok=True)
@@ -1292,7 +1321,7 @@ def clone_repository(repo_url: str, run_name: str, dest_name: str | None = None)
         shutil.rmtree(clone_path)
 
     try:
-        with console.status(f"[bold cyan]Cloning repository {repo_url}...", spinner="dots"):
+        with console.status(f"[bold cyan]正在克隆仓库 {repo_url}...", spinner="dots"):
             subprocess.run(  # noqa: S603
                 [
                     git_executable,
@@ -1309,11 +1338,11 @@ def clone_repository(repo_url: str, run_name: str, dest_name: str | None = None)
 
     except subprocess.CalledProcessError as e:
         error_text = Text()
-        error_text.append("REPOSITORY CLONE FAILED", style="bold red")
+        error_text.append("仓库克隆失败", style="bold red")
         error_text.append("\n\n", style="white")
-        error_text.append(f"Could not clone repository: {repo_url}\n", style="white")
+        error_text.append(f"无法克隆仓库：{repo_url}\n", style="white")
         error_text.append(
-            f"Error: {e.stderr if hasattr(e, 'stderr') and e.stderr else str(e)}", style="dim red"
+            f"错误：{e.stderr if hasattr(e, 'stderr') and e.stderr else str(e)}", style="dim red"
         )
 
         panel = Panel(
@@ -1329,10 +1358,10 @@ def clone_repository(repo_url: str, run_name: str, dest_name: str | None = None)
         sys.exit(1)
     except FileNotFoundError:
         error_text = Text()
-        error_text.append("GIT NOT FOUND", style="bold red")
+        error_text.append("未找到 Git", style="bold red")
         error_text.append("\n\n", style="white")
-        error_text.append("Git is not installed or not available in PATH.\n", style="white")
-        error_text.append("Please install Git to clone repositories.\n", style="white")
+        error_text.append("Git 未安装或不在 PATH 中。\n", style="white")
+        error_text.append("请安装 Git 以便克隆仓库。\n", style="white")
 
         panel = Panel(
             error_text,
@@ -1354,11 +1383,11 @@ def check_docker_connection() -> Any:
     except DockerException:
         console = Console()
         error_text = Text()
-        error_text.append("DOCKER NOT AVAILABLE", style="bold red")
+        error_text.append("Docker 不可用", style="bold red")
         error_text.append("\n\n", style="white")
-        error_text.append("Cannot connect to Docker daemon.\n", style="white")
+        error_text.append("无法连接到 Docker 守护进程。\n", style="white")
         error_text.append(
-            "Please ensure Docker Desktop is installed and running, and try running strix again.\n",
+            "请确保 Docker Desktop 已安装并正在运行，然后重新执行 strix。\n",
             style="white",
         )
 
@@ -1370,7 +1399,7 @@ def check_docker_connection() -> Any:
             padding=(1, 2),
         )
         console.print("\n", panel, "\n")
-        raise RuntimeError("Docker not available") from None
+        raise RuntimeError("Docker 不可用") from None
 
 
 def image_exists(client: Any, image_name: str) -> bool:
@@ -1406,7 +1435,7 @@ def process_pull_line(
         total = len(layers_info)
 
         if total > 0:
-            update_msg = f"[bold cyan]Progress: {completed}/{total} layers complete"
+            update_msg = f"[bold cyan]进度：{completed}/{total} 层已完成"
             if update_msg != last_update:
                 status.update(update_msg)
                 return update_msg
@@ -1414,11 +1443,11 @@ def process_pull_line(
     elif "status" in line and "id" not in line:
         global_status = line["status"]
         if "Pulling from" in global_status:
-            status.update("[bold cyan]Fetching image manifest...")
+            status.update("[bold cyan]正在获取镜像清单...")
         elif "Digest:" in global_status:
-            status.update("[bold cyan]Verifying image...")
+            status.update("[bold cyan]正在验证镜像...")
         elif "Status:" in global_status:
-            status.update("[bold cyan]Finalizing...")
+            status.update("[bold cyan]正在完成...")
 
     return last_update
 
@@ -1426,7 +1455,7 @@ def process_pull_line(
 # LLM utilities
 def validate_llm_response(response: Any) -> None:
     if not response or not response.choices or not response.choices[0].message.content:
-        raise RuntimeError("Invalid response from LLM")
+        raise RuntimeError("LLM 返回无效响应")
 
 
 def validate_config_file(config_path: str) -> Path:
@@ -1434,26 +1463,26 @@ def validate_config_file(config_path: str) -> Path:
     path = Path(config_path)
 
     if not path.exists():
-        console.print(f"[bold red]Error:[/] Config file not found: {config_path}")
+        console.print(f"[bold red]错误：[/] 未找到配置文件：{config_path}")
         sys.exit(1)
 
     if path.suffix != ".json":
-        console.print("[bold red]Error:[/] Config file must be a .json file")
+        console.print("[bold red]错误：[/] 配置文件必须是 `.json` 文件")
         sys.exit(1)
 
     try:
         with path.open("r", encoding="utf-8") as f:
             data = json.load(f)
     except json.JSONDecodeError as e:
-        console.print(f"[bold red]Error:[/] Invalid JSON in config file: {e}")
+        console.print(f"[bold red]错误：[/] 配置文件中的 JSON 无效：{e}")
         sys.exit(1)
 
     if not isinstance(data, dict):
-        console.print("[bold red]Error:[/] Config file must contain a JSON object")
+        console.print("[bold red]错误：[/] 配置文件必须包含一个 JSON 对象")
         sys.exit(1)
 
     if "env" not in data or not isinstance(data.get("env"), dict):
-        console.print("[bold red]Error:[/] Config file must have an 'env' object")
+        console.print("[bold red]错误：[/] 配置文件必须包含一个 `env` 对象")
         sys.exit(1)
 
     return path

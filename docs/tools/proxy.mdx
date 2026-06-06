@@ -1,109 +1,109 @@
 ---
 title: "HTTP Proxy"
-description: "Caido-powered proxy for request interception and replay"
+description: "用于请求拦截与重放的 Caido 代理"
 ---
 
-Strix includes [Caido](https://caido.io), a modern HTTP proxy built for security testing. All browser traffic flows through Caido, giving the agent full control over requests and responses.
+Strix 集成了 [Caido](https://caido.io) 这一面向安全测试的现代 HTTP 代理。所有浏览器流量都会经过 Caido，让智能体能够完整控制请求和响应。
 
-## Capabilities
+## 能力
 
-| Feature          | Description                                  |
+| 功能 | 说明 |
 | ---------------- | -------------------------------------------- |
-| Request Capture  | Log all HTTP/HTTPS traffic automatically     |
-| Request Replay   | Repeat any request with modifications        |
-| HTTPQL           | Query captured traffic with powerful filters |
-| Scope Management | Focus on specific domains or paths           |
-| Sitemap          | Visualize the discovered attack surface      |
+| Request Capture  | 自动记录所有 HTTP/HTTPS 流量     |
+| Request Replay   | 对任意请求进行修改后重放        |
+| HTTPQL           | 使用强大的过滤器查询已捕获流量 |
+| Scope Management | 聚焦特定域名或路径           |
+| Sitemap          | 可视化已发现的攻击面      |
 
-## HTTPQL Filtering
+## HTTPQL 过滤
 
-Query captured requests using Caido's HTTPQL syntax
+使用 Caido 的 HTTPQL 语法查询已捕获请求。
 
-## Request Replay
+## 请求重放
 
 The agent can take any captured request and replay it with modifications:
 
-- Change path parameters (test for IDOR)
-- Modify request body (test for injection)
-- Add/remove headers (test for auth bypass)
-- Alter cookies (test for session issues)
+- 修改路径参数（测试 IDOR）
+- 修改请求体（测试注入）
+- 添加/移除请求头（测试认证绕过）
+- 改动 cookie（测试会话问题）
 
-## Python Integration
+## Python 集成
 
-All proxy functions are automatically available in Python sessions. This enables powerful scripted security testing:
+所有代理函数都会自动暴露给 Python 会话，这使得脚本化安全测试非常强大：
 
 ```python
-# List recent POST requests
+# 列出最近的 POST 请求
 post_requests = list_requests(
     httpql_filter='req.method.eq:"POST"',
     page_size=20
 )
 
-# View a specific request
+# 查看某个具体请求
 request_details = view_request("req_123", part="request")
 
-# Replay with modified payload
+# 使用修改后的载荷重放
 response = repeat_request("req_123", {
     "body": '{"user_id": "admin"}'
 })
 print(f"Status: {response['status_code']}")
 ```
 
-### Available Functions
+### 可用函数
 
-| Function               | Description                                |
+| 函数 | 说明 |
 | ---------------------- | ------------------------------------------ |
-| `list_requests()`      | Query captured traffic with HTTPQL filters |
-| `view_request()`       | Get full request/response details          |
-| `repeat_request()`     | Replay a request with modifications        |
-| `send_request()`       | Send a new HTTP request                    |
-| `scope_rules()`        | Manage proxy scope (allowlist/denylist)    |
-| `list_sitemap()`       | View discovered endpoints                  |
-| `view_sitemap_entry()` | Get details for a sitemap entry            |
+| `list_requests()`      | 使用 HTTPQL 过滤器查询已捕获流量 |
+| `view_request()`       | 获取完整的请求/响应详情          |
+| `repeat_request()`     | 重放并修改请求        |
+| `send_request()`       | 发送新的 HTTP 请求                    |
+| `scope_rules()`        | 管理代理范围（允许/拒绝列表）    |
+| `list_sitemap()`       | 查看已发现的端点                  |
+| `view_sitemap_entry()` | 获取 sitemap 条目详情            |
 
-### Example: Automated IDOR Testing
+### 示例：自动化 IDOR 测试
 
 ```python
-# Get all requests to user endpoints
+# 获取所有到用户端点的请求
 user_requests = list_requests(
     httpql_filter='req.path.cont:"/users/"'
 )
 
 for req in user_requests.get('requests', []):
-    # Try accessing with different user IDs
+    # 尝试使用不同的用户 ID 访问
     for test_id in ['1', '2', 'admin', '../admin']:
         response = repeat_request(req['id'], {
             'url': req['path'].replace('/users/1', f'/users/{test_id}')
         })
 
         if response['status_code'] == 200:
-            print(f"Potential IDOR: {test_id} returned 200")
+            print(f"潜在 IDOR：{test_id} 返回了 200")
 ```
 
-## Human-in-the-Loop
+## 人机协同
 
-Strix exposes the Caido proxy to your host machine, so you can interact with it alongside the automated scan. When the sandbox starts, the Caido URL is displayed in the TUI sidebar — click it to copy, then open it in Caido Desktop.
+Strix 会把 Caido 代理暴露给宿主机，因此你可以在自动扫描的同时与它交互。沙箱启动后，TUI 侧边栏会显示 Caido URL，点击即可复制，然后在 Caido Desktop 中打开。
 
-### Accessing Caido
+### 访问 Caido
 
-1. Start a scan as usual
-2. Look for the **Caido** URL in the sidebar stats panel (e.g. `localhost:52341`)
-3. Open the URL in Caido Desktop
-4. Click **Continue as guest** to access the instance
+1. 像往常一样启动扫描
+2. 在侧边栏统计面板中找到 **Caido** URL（例如 `localhost:52341`）
+3. 在 Caido Desktop 中打开该 URL
+4. 点击 **Continue as guest** 进入实例
 
-### What You Can Do
+### 你可以做什么
 
-- **Inspect traffic** — Browse all HTTP/HTTPS requests the agent is making in real time
-- **Replay requests** — Take any captured request and resend it with your own modifications
-- **Intercept and modify** — Pause requests mid-flight, edit them, then forward
-- **Explore the sitemap** — See the full attack surface the agent has discovered
-- **Manual testing** — Use Caido's tools to test findings the agent reports, or explore areas it hasn't reached
+- **检查流量** — 实时浏览智能体发出的所有 HTTP/HTTPS 请求
+- **重放请求** — 取任意捕获请求并按你的修改重新发送
+- **拦截并修改** — 在请求途中暂停、编辑后再转发
+- **探索 sitemap** — 查看智能体已发现的完整攻击面
+- **手动测试** — 使用 Caido 的工具验证智能体报告的发现，或探索它尚未触及的区域
 
-This turns Strix from a fully automated scanner into a collaborative tool — the agent handles the heavy lifting while you focus on the interesting parts.
+这会把 Strix 从一个全自动扫描器变成协作式工具——智能体负责重活，你专注有意思的部分。
 
-## Scope
+## 范围
 
-Create scopes to filter traffic to relevant domains:
+创建范围以过滤到相关域名的流量：
 
 ```
 Allowlist: ["api.example.com", "*.example.com"]

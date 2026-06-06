@@ -1,53 +1,53 @@
 ---
 title: "Google Vertex AI"
-description: "Configure Strix with Gemini models via Google Cloud"
+description: "通过 Google 云平台配置 Strix 的 Gemini 模型"
 ---
 
-## Installation
+## 安装
 
-Vertex AI requires the Google Cloud dependency. Install Strix with the vertex extra:
+Vertex AI 需要 Google 云平台依赖。请通过 vertex 额外依赖安装 Strix：
 
 ```bash
 pipx install "strix-agent[vertex]"
 ```
 
-## Setup
+## 配置
 
 ```bash
 export STRIX_LLM="vertex_ai/gemini-3-pro-preview"
 ```
 
-No API key required—uses Google Cloud Application Default Credentials.
+无需 API 密钥，使用 Google 云平台的 Application Default Credentials。
 
-## Authentication
+## 认证
 
-### Option 1: gcloud CLI
+### 方案 1：gcloud CLI
 
 ```bash
 gcloud auth application-default login
 ```
 
-### Option 2: Service Account
+### 方案 2：服务账号
 
 ```bash
 export GOOGLE_APPLICATION_CREDENTIALS="/path/to/service-account.json"
 ```
 
-## Available Models
+## 可用模型
 
-| Model | Description |
+| 模型 | 说明 |
 |-------|-------------|
-| `vertex_ai/gemini-3-pro-preview` | Best overall performance for security testing |
-| `vertex_ai/gemini-3-flash-preview` | Faster and cheaper |
+| `vertex_ai/gemini-3-pro-preview` | 安全测试的整体最佳表现 |
+| `vertex_ai/gemini-3-flash-preview` | 更快且更便宜 |
 
-## Project Configuration
+## 项目配置
 
 ```bash
 export VERTEXAI_PROJECT="your-project-id"
 export VERTEXAI_LOCATION="global"
 ```
 
-## Prerequisites
+## 先决条件
 
-1. Enable the Vertex AI API in your Google Cloud project
-2. Ensure your account has the `Vertex AI User` role
+1. 在你的 Google 云平台项目中启用 Vertex AI API
+2. 确保你的账户拥有 `Vertex AI User` 角色

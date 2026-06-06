@@ -1,13 +1,13 @@
 ---
 name: xxe
-description: XXE testing for external entity injection, file disclosure, and SSRF via XML parsers
+description: XXE 安全测试技能
 ---
 
-# XXE
+# XXE / XML 外部实体
 
 XML External Entity injection is a parser-level failure that enables local file reads, SSRF to internal control planes, denial-of-service via entity expansion, and in some stacks, code execution through XInclude/XSLT or language-specific wrappers. Treat every XML input as untrusted until the parser is proven hardened.
 
-## Attack Surface
+## 攻击面
 
 **Capabilities**
 - File disclosure: read server files and configuration
@@ -93,7 +93,7 @@ evil.dtd:
 %e; %exfil;
 ```
 
-## Key Vulnerabilities
+## 关键漏洞
 
 ### Parameter Entities
 
@@ -144,7 +144,7 @@ Targets: transform endpoints, reporting engines (XSLT/Jasper/FOP), xml-styleshee
 - If network blocked but filesystem readable, pivot to local file disclosure
 - If files blocked but network open, pivot to SSRF/OAST
 
-## Special Contexts
+## 特殊场景
 
 ### SOAP
 
@@ -172,7 +172,7 @@ Targets: transform endpoints, reporting engines (XSLT/Jasper/FOP), xml-styleshee
 - OOXML (docx/xlsx/pptx) are ZIPs containing XML
 - Insert payloads into document.xml, rels, or drawing XML and repackage
 
-## Testing Methodology
+## 测试方法
 
 1. **Inventory consumers** - Endpoints, upload parsers, background jobs, CLI tools, converters, third-party SDKs
 2. **Capability probes** - Does parser accept DOCTYPE? Resolve external entities? Allow network access? Support XInclude/XSLT?
@@ -180,7 +180,7 @@ Targets: transform endpoints, reporting engines (XSLT/Jasper/FOP), xml-styleshee
 4. **Escalate** - Targeted file/SSRF payloads
 5. **Validate parity** - Same parser options must hold across REST, SOAP, SAML, file uploads, and background jobs
 
-## Validation
+## 验证
 
 1. Provide a minimal payload proving parser capability (DOCTYPE/XInclude/XSLT)
 2. Demonstrate controlled access (file path or internal URL) with reproducible evidence
@@ -188,21 +188,21 @@ Targets: transform endpoints, reporting engines (XSLT/Jasper/FOP), xml-styleshee
 4. Show cross-channel consistency (e.g., same behavior in upload and SOAP paths)
 5. Bound impact: exact files/data reached or internal targets proven
 
-## False Positives
+## 误报
 
 - DOCTYPE accepted but entities not resolved and no transclusion reachable
 - Filters or sandboxes that emit entity strings literally (no IO performed)
 - Mocks/stubs that simulate success without network/file access
 - XML processed only client-side (no server parse)
 
-## Impact
+## 影响
 
 - Disclosure of credentials/keys/configs, code, and environment secrets
 - Access to cloud metadata/token services and internal admin panels
 - Denial of service via entity expansion or slow external resources
 - Code execution via XSLT/expect:// in insecure stacks
 
-## Pro Tips
+## 实战技巧
 
 1. Prefer OAST first; it is the quietest confirmation in production-like paths
 2. When content is sanitized, use error-based and length/ETag diffs
@@ -215,6 +215,6 @@ Targets: transform endpoints, reporting engines (XSLT/Jasper/FOP), xml-styleshee
 9. Combine with path traversal and deserialization where XML touches downstream systems
 10. Document exact parser behavior per stack; defenses must match real libraries and flags
 
-## Summary
+## 总结
 
 XXE is eliminated by hardening parsers: forbid DOCTYPE, disable external entity resolution, and disable network access for XML processors and transformers across every code path.

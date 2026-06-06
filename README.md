@@ -1,276 +1,296 @@
-<p align="center">
-  <a href="https://strix.ai/">
-    <img src="https://github.com/usestrix/.github/raw/main/imgs/cover.png" alt="Strix Banner" width="100%">
-  </a>
-</p>
+# Strix 二次开发版
 
-<div align="center">
+面向中国国内使用环境、引入 Cairn 状态图搜索思想的 AI 安全测试系统。
 
-# Strix
+本项目基于开源项目 [usestrix/strix](https://github.com/usestrix/strix) 开发。它保留了 Strix 原有的 Agent、共享沙箱、安全工具、漏洞验证和报告能力，并重点改造了模型接入方式与黑盒渗透测试流程。
 
-### Open-source AI hackers to find and fix your app’s vulnerabilities.
+> [!IMPORTANT]
+> 本仓库不是 Strix 官方发行版。项目仅用于获得明确授权的安全测试、教学研究和受控靶场。
 
-<br/>
+## 为什么进行二次开发
 
+原版 Strix 已经提供了完整的 AI 安全测试基础设施，但在中国国内环境和长时间黑盒渗透测试中，仍有一些值得改进的地方。
 
-<a href="https://docs.strix.ai"><img src="https://img.shields.io/badge/Docs-docs.strix.ai-2b9246?style=for-the-badge&logo=gitbook&logoColor=white" alt="Docs"></a>
-<a href="https://strix.ai"><img src="https://img.shields.io/badge/Website-strix.ai-f0f0f0?style=for-the-badge&logoColor=000000" alt="Website"></a>
-[![](https://dcbadge.limes.pink/api/server/strix-ai)](https://discord.gg/strix-ai)
+### 更适合中国国内的模型接入
 
-<a href="https://deepwiki.com/usestrix/strix"><img src="https://deepwiki.com/badge.svg" alt="Ask DeepWiki"></a>
-<a href="https://github.com/usestrix/strix"><img src="https://img.shields.io/github/stars/usestrix/strix?style=flat-square" alt="GitHub Stars"></a>
-<a href="LICENSE"><img src="https://img.shields.io/badge/License-Apache%202.0-3b82f6?style=flat-square" alt="License"></a>
-<a href="https://pypi.org/project/strix-agent/"><img src="https://img.shields.io/pypi/v/strix-agent?style=flat-square" alt="PyPI Version"></a>
+原版 Strix 主要围绕海外模型服务设计。国内用户面临网络访问、接口配置、调用稳定性和使用成本等问题。
 
+本项目增加并优化了国内常用模型服务的直接接入：
 
-<a href="https://discord.gg/strix-ai"><img src="https://github.com/usestrix/.github/raw/main/imgs/Discord.png" height="40" alt="Join Discord"></a>
-<a href="https://x.com/strix_ai"><img src="https://github.com/usestrix/.github/raw/main/imgs/X.png" height="40" alt="Follow on X"></a>
+- **阿里云百炼 / 通义千问 Qwen**：自动使用 DashScope OpenAI 兼容接口。
+- **DeepSeek**：自动使用 DeepSeek 官方 OpenAI 兼容接口，并适配推理参数。
+- **中文 CLI、提示信息与文档**：降低国内用户的配置和使用门槛。
+- **保留 LiteLLM 兼容能力**：仍可继续使用 OpenAI、Anthropic、Gemini、Ollama 等模型。
 
+模型名称、API Key 和 Base URL 会根据提供方自动解析，不需要手动拼装复杂的 LiteLLM 配置。
 
-<a href="https://trendshift.io/repositories/15362" target="_blank"><img src="https://trendshift.io/api/badge/repositories/15362" alt="usestrix/strix | Trendshift" width="250" height="55"/></a>
+### 改进黑盒渗透测试的长期协作能力
 
-</div>
+原版 Strix 的黑盒流程主要依赖 Root Agent：
 
+```text
+Root Agent 侦察与规划
+→ 创建专项子 Agent
+→ 子 Agent 发现、验证和报告
+→ 结果通过消息返回 Root Agent
+```
 
-> [!TIP]
-> **New!** Strix integrates seamlessly with GitHub Actions and CI/CD pipelines. Automatically scan for vulnerabilities on every pull request and block insecure code before it reaches production - [Get started with no setup required](https://app.strix.ai).
+这种方式直观、灵活，但在目标复杂、任务并行或扫描持续时间较长时容易出现：
 
----
+- 重要发现散落在不同 Agent 上下文中。
+- Root Agent 上下文不断增长，规划质量逐渐下降。
+- Agent 之间可能重复测试相同方向。
+- 难以判断攻击面覆盖是否完整。
+- 扫描中断后难以从原状态继续。
+- Agent 委派图只能说明“谁创建了谁”，不能完整表达“基于什么事实，为什么进行这次探索”。
 
+因此，本项目使用 Cairn 的状态图搜索思想，重构了纯黑盒 Web/IP 渗透测试流程。
 
-## Strix Overview
+## Cairn 带来的灵感
 
-Strix are autonomous AI agents that act just like real hackers - they run your code dynamically, find vulnerabilities, and validate them through actual proof-of-concepts. Built for developers and security teams who need fast, accurate security testing without the overhead of manual pentesting or the false positives of static analysis tools.
+[Cairn](https://github.com/oritera/Cairn) 将渗透测试视为一个从已知起点走向目标的状态空间搜索问题。
 
-**Key Capabilities:**
+它没有为 Agent 预设固定角色，而是围绕三种核心信息协作：
 
-- **Full hacker toolkit** out of the box
-- **Teams of agents** that collaborate and scale
-- **Real validation** with PoCs, not false positives
-- **Developer‑first** CLI with actionable reports
-- **Auto‑fix & reporting** to accelerate remediation
+- **Fact**：已经确认的客观事实。
+- **Intent**：基于现有事实提出的下一步探索方向。
+- **Hint**：用户或系统提供的策略信息。
 
+每次探索都从已有 Fact 出发，执行一个 Intent，再产生新的 Fact：
 
-<br>
+```text
+发现登录接口（Fact）
+→ 测试认证逻辑（Intent）
+→ 发现可疑会话行为（Fact）
+→ 独立验证会话漏洞（Intent）
+→ 漏洞验证成立（Fact）
+```
 
+这种方法使中间结果成为可共享、可恢复、可审计的系统状态，而不是只存在于某个 Agent 的对话历史中。
 
-<div align="center">
-  <a href="https://strix.ai">
-    <img src=".github/screenshot.png" alt="Strix Demo" width="1000" style="border-radius: 16px;">
-  </a>
-</div>
+本项目没有直接嵌入 Cairn Server、Dispatcher 或 Worker 容器，而是在 Strix 内实现轻量状态图控制面。这样可以复用 Strix 已有能力，同时吸收 Cairn 最有价值的设计思想。
 
+## 修改后的黑盒架构
 
-## Use Cases
+当全部目标均为 `web_application` 或 `ip_address`，且没有提供源码时，系统自动进入新的状态图黑盒流程：
 
-- **Application Security Testing** - Detect and validate critical vulnerabilities in your applications
-- **Rapid Penetration Testing** - Get penetration tests done in hours, not weeks, with compliance reports
-- **Bug Bounty Automation** - Automate bug bounty research and generate PoCs for faster reporting
-- **CI/CD Integration** - Run tests in CI/CD to block vulnerabilities before reaching production
+```text
+目标输入
+→ 初始化 Fact / Intent 状态图
+→ 专项 Agent 执行 Recon、Discovery 或 Validation Intent
+→ 执行结论写回 Fact
+→ Reason Agent 读取完整状态图并规划下一批 Intent
+→ 满足覆盖门槛且 Reason Agent 确认完成
+→ 生成最终渗透测试报告
+```
 
-## 🚀 Quick Start
+白盒扫描以及同时包含源码和在线目标的混合扫描，继续使用 Strix 原有流程。
 
-**Prerequisites:**
-- Docker (running)
-- An LLM API key from any [supported provider](https://docs.strix.ai/llm-providers/overview) (OpenAI, Anthropic, Google, etc.)
+### 程序与 Agent 的职责边界
 
-### Installation & First Scan
+程序控制面负责：
+
+- Intent 去重、认领、释放、失败重试和并发调度。
+- 校验任务是否超出授权目标范围。
+- 保存 Fact、Intent、覆盖状态和因果关系。
+- 根据 `quick`、`standard`、`deep` 扫描模式检查覆盖门槛。
+- 持久化扫描状态并支持中断恢复。
+- 限制不同类型 Agent 可以调用的工具。
+
+Agent 负责：
+
+- **Reason Agent**：只读取状态图、提出新 Intent 或判断是否完成。
+- **Recon / Discovery Agent**：执行单一侦察或漏洞发现任务。
+- **Validation Agent**：独立验证候选漏洞与 PoC。
+- **Reporting Agent**：仅在验证成功后创建正式漏洞报告。
+
+Reason Agent 不能执行扫描工具；普通图 Worker 不能创建子 Agent或直接提交漏洞报告。关键流程由程序约束，而不是只依赖 Prompt。
+
+### 状态图持久化
+
+每次黑盒扫描都会生成：
+
+```text
+strix_runs/<run-name>/state_graph/events.jsonl
+strix_runs/<run-name>/state_graph/snapshot.json
+strix_runs/<run-name>/state_graph/graph.yaml
+```
+
+- `events.jsonl`：状态变更事件，是恢复执行的主要依据。
+- `snapshot.json`：当前状态快照，用于快速读取。
+- `graph.yaml`：便于人工查看和审计的完整状态图。
+
+中断后可以继续运行：
 
 ```bash
-# Install Strix
-curl -sSL https://strix.ai/install | bash
-
-# Configure your AI provider
-export STRIX_LLM="openai/gpt-5.4"
-export LLM_API_KEY="your-api-key"
-
-# Run your first security assessment
-strix --target ./app-directory
+strix --resume <run-name>
 ```
 
-> [!NOTE]
-> First run automatically pulls the sandbox Docker image. Results are saved to `strix_runs/<run-name>`
+恢复时，未完成 Intent 会重新进入调度队列；已经完成的探索和漏洞报告不会重复执行。
 
----
+## 核心能力
 
-## ☁️ Strix Platform
+- 完整 HTTP 代理、浏览器自动化、终端和 Python 运行时。
+- 子域名、端口、服务、目录、接口和参数枚举。
+- 针对访问控制、认证、注入、SSRF、XXE、RCE、文件处理和业务逻辑的专项测试。
+- 候选漏洞独立验证与 PoC 确认。
+- 漏洞去重、CVSS 评估和最终报告。
+- 基于 Fact/Intent 的黑盒状态图搜索。
+- 按扫描模式执行确定性覆盖检查。
+- 扫描状态持久化、中断恢复和完整探索路径审计。
 
-Try the Strix full-stack security platform at **[app.strix.ai](https://app.strix.ai)** — sign up for free, connect your repos and domains, and launch a pentest in minutes.
+## 快速开始
 
-- **Validated findings with PoCs** and reproduction steps
-- **One-click autofix** as ready-to-merge pull requests
-- **Continuous monitoring** across code, cloud, and infrastructure
-- **Integrations** with GitHub, Slack, Jira, Linear, and CI/CD pipelines
-- **Continuous learning** that builds on past findings and remediations
+### 前置条件
 
-[**Start your first pentest →**](https://app.strix.ai)
+- Python 3.12 或更高版本
+- 正在运行的 Docker
+- 可用的大语言模型 API Key
 
----
-
-## ✨ Features
-
-### Agentic Security Tools
-
-Strix agents come equipped with a comprehensive security testing toolkit:
-
-- **Full HTTP Proxy** - Full request/response manipulation and analysis
-- **Browser Automation** - Multi-tab browser for testing of XSS, CSRF, auth flows
-- **Terminal Environments** - Interactive shells for command execution and testing
-- **Python Runtime** - Custom exploit development and validation
-- **Reconnaissance** - Automated OSINT and attack surface mapping
-- **Code Analysis** - Static and dynamic analysis capabilities
-- **Knowledge Management** - Structured findings and attack documentation
-
-### Comprehensive Vulnerability Detection
-
-Strix can identify and validate a wide range of security vulnerabilities:
-
-- **Access Control** - IDOR, privilege escalation, auth bypass
-- **Injection Attacks** - SQL, NoSQL, command injection
-- **Server-Side** - SSRF, XXE, deserialization flaws
-- **Client-Side** - XSS, prototype pollution, DOM vulnerabilities
-- **Business Logic** - Race conditions, workflow manipulation
-- **Authentication** - JWT vulnerabilities, session management
-- **Infrastructure** - Misconfigurations, exposed services
-
-### Graph of Agents
-
-Advanced multi-agent orchestration for comprehensive security testing:
-
-- **Distributed Workflows** - Specialized agents for different attacks and assets
-- **Scalable Testing** - Parallel execution for fast comprehensive coverage
-- **Dynamic Coordination** - Agents collaborate and share discoveries
-
----
-
-## Usage Examples
-
-### Basic Usage
+### 安装
 
 ```bash
-# Scan a local codebase
-strix --target ./app-directory
-
-# Security review of a GitHub repository
-strix --target https://github.com/org/repo
-
-# Black-box web application assessment
-strix --target https://your-app.com
+uv sync
 ```
 
-### Advanced Testing Scenarios
+### 使用通义千问 Qwen
 
 ```bash
-# Grey-box authenticated testing
-strix --target https://your-app.com --instruction "Perform authenticated testing using credentials: user:pass"
+export STRIX_LLM="qwen3.7-max"
+export DASHSCOPE_API_KEY="your-dashscope-api-key"
 
-# Multi-target testing (source code + deployed app)
-strix -t https://github.com/org/app -t https://your-app.com
-
-# White-box source-aware scan (local repository)
-strix --target ./app-directory --scan-mode standard
-
-# Focused testing with custom instructions
-strix --target api.your-app.com --instruction "Focus on business logic flaws and IDOR vulnerabilities"
-
-# Provide detailed instructions through file (e.g., rules of engagement, scope, exclusions)
-strix --target api.your-app.com --instruction-file ./instruction.md
-
-# Force PR diff-scope against a specific base branch
-strix -n --target ./ --scan-mode quick --scope-mode diff --diff-base origin/main
+uv run strix --target https://your-app.example
 ```
 
-### Headless Mode
+默认使用：
 
-Run Strix programmatically without interactive UI using the `-n/--non-interactive` flag—perfect for servers and automated jobs. The CLI prints real-time vulnerability findings, and the final report before exiting. Exits with non-zero code when vulnerabilities are found.
+```text
+https://dashscope.aliyuncs.com/compatible-mode/v1
+```
+
+如需覆盖接口地址：
 
 ```bash
-strix -n --target https://your-app.com
+export DASHSCOPE_API_BASE="your-dashscope-compatible-base-url"
 ```
 
-### CI/CD (GitHub Actions)
+### 使用 DeepSeek
 
-Strix can be added to your pipeline to run a security test on pull requests with a lightweight GitHub Actions workflow:
+```bash
+export STRIX_LLM="deepseek-v4-pro"
+export DEEPSEEK_API_KEY="your-deepseek-api-key"
 
-```yaml
-name: strix-penetration-test
-
-on:
-  pull_request:
-
-jobs:
-  security-scan:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v6
-        with:
-          fetch-depth: 0
-
-      - name: Install Strix
-        run: curl -sSL https://strix.ai/install | bash
-
-      - name: Run Strix
-        env:
-          STRIX_LLM: ${{ secrets.STRIX_LLM }}
-          LLM_API_KEY: ${{ secrets.LLM_API_KEY }}
-
-        run: strix -n -t ./ --scan-mode quick
+uv run strix --target https://your-app.example
 ```
 
-> [!TIP]
-> In CI pull request runs, Strix automatically scopes quick reviews to changed files.
-> If diff-scope cannot resolve, ensure checkout uses full history (`fetch-depth: 0`) or pass
-> `--diff-base` explicitly.
+默认使用：
 
-### Configuration
+```text
+https://api.deepseek.com
+```
+
+如需覆盖接口地址：
+
+```bash
+export DEEPSEEK_API_BASE="your-deepseek-compatible-base-url"
+```
+
+### 使用其他模型
 
 ```bash
 export STRIX_LLM="openai/gpt-5.4"
 export LLM_API_KEY="your-api-key"
 
-# Optional
-export LLM_API_BASE="your-api-base-url"  # if using a local model, e.g. Ollama, LMStudio
-export PERPLEXITY_API_KEY="your-api-key"  # for search capabilities
-export STRIX_REASONING_EFFORT="high"  # control thinking effort (default: high, quick scan: medium)
+uv run strix --target https://your-app.example
 ```
 
-> [!NOTE]
-> Strix automatically saves your configuration to `~/.strix/cli-config.json`, so you don't have to re-enter it on every run.
+本项目继续兼容 LiteLLM 支持的模型提供方和本地模型。
 
-**Recommended models for best results:**
+## 使用示例
 
-- [OpenAI GPT-5.4](https://openai.com/api/) — `openai/gpt-5.4`
-- [Anthropic Claude Sonnet 4.6](https://claude.com/platform/api) — `anthropic/claude-sonnet-4-6`
-- [Google Gemini 3 Pro Preview](https://cloud.google.com/vertex-ai) — `vertex_ai/gemini-3-pro-preview`
+```bash
+进入项目根目录，运行如下代码：
+# Web 应用黑盒渗透测试：自动使用状态图流程
+uv run strix --target https://your-app.example
 
-See the [LLM Providers documentation](https://docs.strix.ai/llm-providers/overview) for all supported providers including Vertex AI, Bedrock, Azure, and local models.
+# IP 黑盒渗透测试：自动使用状态图流程
+uv run strix --target 192.0.2.10
 
-## Enterprise
+# Web + IP 多目标黑盒测试
+uv run strix \
+  --target https://your-app.example \
+  --target 192.0.2.10 \
+  --scan-mode standard
 
-Get the same Strix experience with [enterprise-grade](https://strix.ai/demo) controls: SSO (SAML/OIDC), custom compliance reports, dedicated support & SLA, custom deployment options (VPC/self-hosted), BYOK model support, and tailored agents optimized for your environment. [Learn more](https://strix.ai/demo).
+# 指定测试重点
+uv run strix \
+  --target https://your-app.example \
+  --instruction "重点检查认证、越权和业务逻辑漏洞"
 
-## Documentation
+# 非交互模式
+uv run strix -n --target https://your-app.example
 
-Full documentation is available at **[docs.strix.ai](https://docs.strix.ai)** — including detailed guides for usage, CI/CD integrations, skills, and advanced configuration.
+# 恢复中断的黑盒扫描
+uv run strix --resume <run-name>
 
-## Contributing
+# 本地源码白盒扫描：继续使用原版 Strix 流程
+uv run strix --target ./app-directory
 
-We welcome contributions of code, docs, and new skills - check out our [Contributing Guide](https://docs.strix.ai/contributing) to get started or open a [pull request](https://github.com/usestrix/strix/pulls)/[issue](https://github.com/usestrix/strix/issues).
+# 源码与在线目标混合扫描：继续使用原版 Strix 流程
+uv run strix \
+  --target ./app-directory \
+  --target https://your-app.example
+```
 
-## Join Our Community
+## 扫描模式
 
-Have questions? Found a bug? Want to contribute? **[Join our Discord!](https://discord.gg/strix-ai)**
+| 模式 | 目标 |
+| --- | --- |
+| `quick` | 快速覆盖关键入口、认证、访问控制与注入风险 |
+| `standard` | 平衡覆盖范围与验证深度，适合常规安全评估 |
+| `deep` | 深入枚举、状态转换、协议特性与攻击链探索 |
 
-## Support the Project
+状态图流程只有在满足对应模式的覆盖门槛，并且 Reason Agent 明确确认没有剩余高价值方向后，才允许完成扫描。
 
-**Love Strix?** Give us a ⭐ on GitHub!
+## 调试模式
+<img src="image.png">
 
-## Acknowledgements
+使用 Pycharm 打断点，对项目进入如下配置，后点击 `Debug` 按钮启动调试。
 
-Strix builds on the incredible work of open-source projects like [LiteLLM](https://github.com/BerriAI/litellm), [Caido](https://github.com/caido/caido), [Nuclei](https://github.com/projectdiscovery/nuclei), [Playwright](https://github.com/microsoft/playwright), and [Textual](https://github.com/Textualize/textual). Huge thanks to their maintainers!
+- 新建一个 Python Run/Debug Configuration 
+- 选择你的项目解释器，最好是这个仓库的 .venv 
+- Module name 填：strix.interface.main 
+- Parameters 填：-n --target ./your-project --scan-mode quick 
+- Working directory 设为仓库根目录：xxxx/safe_projects/strix 
+- 环境变量按你要用的模型填，比如 deepseek：STRIX_LLM=deepseek-v4-pro;OPENAI_API_KEY=sk-xxxx 
+- 然后直接点 Debug，断点就能进。
 
+## 说明
+
+本项目尊重并持续受益于原版 Strix 的设计与实现：
+
+- Agent 执行循环和多 Agent 基础设施。
+- Docker 共享沙箱与安全测试工具。
+- 技能与漏洞测试 Playbook。
+- 漏洞验证、去重、报告和 CLI/TUI。
+- 白盒与混合扫描流程。
+
+本项目的主要新增内容：
+
+- DeepSeek 与通义千问 Qwen 的国内接口适配。
+- 中文使用体验。
+- 基于 Cairn 思想的黑盒 Fact/Intent 状态图。
+- 程序化黑盒调度、覆盖门槛、工具权限和恢复能力。
+
+## 致谢
+
+首先感谢 [usestrix/strix](https://github.com/usestrix/strix) 项目及其维护者。没有 Strix 提供的 Agent、安全工具、沙箱和报告系统，本项目无法快速完成这些探索。
+
+特别感谢 [oritera/Cairn](https://github.com/oritera/Cairn)。本项目黑盒渗透测试流程的核心思路，直接受到 Cairn 的黑板架构、Fact/Intent 图、状态空间搜索和间接协作思想启发。
+
+同时感谢 [LiteLLM](https://github.com/BerriAI/litellm)、[Caido](https://github.com/caido/caido)、[Nuclei](https://github.com/projectdiscovery/nuclei)、[Playwright](https://github.com/microsoft/playwright) 和 [Textual](https://github.com/Textualize/textual) 等开源项目。
+
+## 安全与授权
 
 > [!WARNING]
-> Only test apps you own or have permission to test. You are responsible for using Strix ethically and legally.
-
-</div>
+> 只允许测试你拥有或已经获得明确授权的应用、域名、IP 和系统。未经授权的扫描、漏洞验证、利用或数据访问可能违法，并可能对目标造成实际损害。使用者需要对自己的行为承担全部责任。

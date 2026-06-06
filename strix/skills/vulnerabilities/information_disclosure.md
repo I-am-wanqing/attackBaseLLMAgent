@@ -1,18 +1,18 @@
 ---
 name: information-disclosure
-description: Information disclosure testing covering error messages, debug endpoints, metadata leakage, and source exposure
+description: 信息泄露安全测试技能
 ---
 
-# Information Disclosure
+# 信息泄露
 
 Information leaks accelerate exploitation by revealing code, configuration, identifiers, and trust boundaries. Treat every response byte, artifact, and header as potential intelligence. Minimize, normalize, and scope disclosure across all channels.
 
-## Attack Surface
+## 攻击面
 
 - Errors and exception pages: stack traces, file paths, SQL, framework versions
 - Debug/dev tooling reachable in prod: debuggers, profilers, feature flags
 - DVCS/build artifacts and temp/backup files: .git, .svn, .hg, .bak, .swp, archives
-- Configuration and secrets: .env, phpinfo, appsettings.json, Docker/K8s manifests
+- 配置 and secrets: .env, phpinfo, appsettings.json, Docker/K8s manifests
 - API schemas and introspection: OpenAPI/Swagger, GraphQL introspection, gRPC reflection
 - Client bundles and source maps: webpack/Vite maps, embedded env, `__NEXT_DATA__`, static JSON
 - Headers and response metadata: Server/X-Powered-By, tracing, ETag, Accept-Ranges, Server-Timing
@@ -29,7 +29,7 @@ Information leaks accelerate exploitation by revealing code, configuration, iden
 - Template engine probes: `{{7*7}}`, `${7*7}` identify templating stack
 - JSON/XML parsers: type mismatches leak internal model names
 
-### Debug and Env Modes
+### Debug and Env 模式s
 
 - Debug pages: Django DEBUG, Laravel Telescope, Rails error pages, Flask/Werkzeug debugger, ASP.NET customErrors Off
 - Profiler endpoints: `/debug/pprof`, `/actuator`, `/_profiler`, custom `/debug` APIs
@@ -86,12 +86,12 @@ Information leaks accelerate exploitation by revealing code, configuration, iden
 
 - EXIF, PDF/Office properties: authors, paths, software versions, timestamps, embedded objects
 
-### Cloud Storage
+### 云端 Storage
 
 - S3/GCS/Azure: anonymous listing disabled but object reads allowed; metadata headers leak owner/project identifiers
 - Pre-signed URLs: audience not bound; observe key scope and lifetime in URL params
 
-## Key Vulnerabilities
+## 关键漏洞
 
 ### Differential Oracles
 
@@ -137,7 +137,7 @@ Information leaks accelerate exploitation by revealing code, configuration, iden
 1. Schema reveals hidden fields/endpoints
 2. Attempt requests with those fields; confirm missing authorization
 
-## Testing Methodology
+## 测试方法
 
 1. **Build channel map** - Web, API, GraphQL, WebSocket, gRPC, mobile, background jobs, exports, CDN
 2. **Establish diff harness** - Compare owner vs non-owner vs anonymous; normalize on status/body length/ETag/headers
@@ -145,7 +145,7 @@ Information leaks accelerate exploitation by revealing code, configuration, iden
 4. **Enumerate artifacts** - DVCS folders, backups, config endpoints, source maps, client bundles, API docs
 5. **Correlate to impact** - Versions→CVE, paths→LFI/RCE, keys→cloud access, schemas→auth bypass
 
-## Validation
+## 验证
 
 1. Provide raw evidence (headers/body/artifact) and explain exact data revealed
 2. Determine intent: cross-check docs/UX; classify per triage rubric
@@ -153,7 +153,7 @@ Information leaks accelerate exploitation by revealing code, configuration, iden
 4. Show reproducibility and minimal request set
 5. Bound scope (user, tenant, environment) and data sensitivity classification
 
-## False Positives
+## 误报
 
 - Intentional public docs or non-sensitive metadata with no exploit path
 - Generic errors with no actionable details
@@ -161,14 +161,14 @@ Information leaks accelerate exploitation by revealing code, configuration, iden
 - Version banners with no exposed vulnerable surface and no chain
 - Owner-visible-only details that do not cross identity/tenant boundaries
 
-## Impact
+## 影响
 
 - Accelerated exploitation of RCE/LFI/SSRF via precise versions and paths
 - Credential/secret exposure leading to persistent external compromise
 - Cross-tenant data disclosure through exports, caches, or mis-scoped signed URLs
 - Privacy/regulatory violations and business intelligence leakage
 
-## Pro Tips
+## 实战技巧
 
 1. Start with artifacts (DVCS, backups, maps) before payloads; artifacts yield the fastest wins
 2. Normalize responses and diff by digest to reduce noise when comparing roles
@@ -178,6 +178,6 @@ Information leaks accelerate exploitation by revealing code, configuration, iden
 6. Mine observability endpoints last; they are noisy but high-yield in misconfigured setups
 7. Chain quickly to a concrete risk and stop—proof should be minimal and reversible
 
-## Summary
+## 总结
 
 Information disclosure is an amplifier. Convert leaks into precise, minimal exploits or clear architectural risks.

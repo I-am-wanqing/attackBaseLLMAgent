@@ -1,13 +1,13 @@
 ---
 name: header-injection
-description: HTTP header injection testing covering CRLF / response splitting, cache poisoning, Host-header confusion, cookie fixation, and proxy / forwarding header smuggling
+description: HTTP 头部注入安全测试技能
 ---
 
-# HTTP Header Injection
+# 头部注入
 
 Header injection turns user input into protocol-level control: response splitting, cache poisoning, session fixation, authentication bypass, and request smuggling all trace back to a server-controlled header value that wasn't normalized. The bug usually lives in middle layers — frameworks that copy a request value into a response header, proxies that trust forwarded headers, caches keyed on something the attacker influences. Treat any user-controlled value that reaches a header as code-execution-equivalent until proven otherwise.
 
-## Attack Surface
+## 攻击面
 
 **Input shapes that reach headers**
 - Query/body/path values echoed into `Set-Cookie`, `Location`, `Content-Type`, `Content-Disposition`, `Link`, custom `X-*`
@@ -17,7 +17,7 @@ Header injection turns user input into protocol-level control: response splittin
 
 **Code patterns that enable injection**
 - Direct concatenation of user input into header values without CR/LF stripping
-- Frameworks that accept header values as strings and serialize verbatim (no normalization)
+- 框架 that accept header values as strings and serialize verbatim (no normalization)
 - Proxy chains trusting `X-Forwarded-*` / `Forwarded` / `X-Real-IP` set by an upstream that anyone can spoof
 - `X-HTTP-Method-Override` and similar method-shaping headers respected past auth layers
 
@@ -60,7 +60,7 @@ Header injection turns user input into protocol-level control: response splittin
 - Same payload over HTTP/1.1 vs HTTP/2 vs chunked — diff status, headers, body length to map parsing differences
 - Compare `Host` and `X-Forwarded-Host` precedence: send both with different values and observe which wins in redirects, links, log entries
 
-## Key Vulnerabilities
+## 关键漏洞
 
 ### CRLF Response Splitting and Smuggling
 
@@ -115,7 +115,7 @@ The `X-Forwarded-*` family is informational — there is no protocol guarantee a
 - Inject `charset=utf-7` in `Content-Type` for legacy XSS via UTF-7-encoded payloads
 - Inject `Content-Disposition: inline` to switch a download into in-page rendering
 - Inject `Content-Encoding: gzip` without actually compressing — clients decode-fail and may reveal raw response bytes in error paths
-- *Absence* of `X-Content-Type-Options: nosniff` is what enables the sniffing attacks above; the header is a hardening control, not an attack surface — but if a server sets it inconsistently across endpoints, target the ones that don't
+- *Absence* of `X-Content-Type-选项: nosniff` is what enables the sniffing attacks above; the header is a hardening control, not an attack surface — but if a server sets it inconsistently across endpoints, target the ones that don't
 
 ### XSS via Response Headers
 
@@ -157,7 +157,7 @@ The `X-Forwarded-*` family is informational — there is no protocol guarantee a
 - Case mangling for filters that key off exact casing
 - Null byte truncation in header name (`X-Forwarded-For\x00Evil`) on parsers that stop at NUL
 
-## Testing Methodology
+## 测试方法
 
 1. **Inventory varying headers** — enumerate every response header whose value moves with input
 2. **Probe CR/LF normalization** — inject `%0d%0a` (and the encoding variants) into each varying header source; observe whether the second line lands as a real header
@@ -168,7 +168,7 @@ The `X-Forwarded-*` family is informational — there is no protocol guarantee a
 7. **Test request smuggling pairs** — conflicting `Content-Length` and `Transfer-Encoding`, two `Content-Length` headers, malformed chunked encoding, against any frontend → backend pair
 8. **Cross-protocol** — replay payloads over HTTP/1.1 and HTTP/2; diff behavior
 
-## Validation
+## 验证
 
 1. Show two distinct users (or sessions) receiving content keyed on attacker-supplied header — proves cache poisoning
 2. Capture a password-reset / OAuth link pointing at attacker-controlled host — proves Host injection
@@ -177,7 +177,7 @@ The `X-Forwarded-*` family is informational — there is no protocol guarantee a
 5. For request smuggling: show one victim request seeing data from a different request appended (not just timing or single-shot anomaly)
 6. All findings should produce a durable artifact (cached response, sent email, log entry, session change) — transient anomalies are not validation
 
-## False Positives
+## 误报
 
 - Headers that vary by input but are correctly keyed in the cache (intentional personalization, Vary set correctly)
 - `X-Forwarded-*` reflected back but only used for logging — not a security boundary, may not be exploitable
@@ -185,7 +185,7 @@ The `X-Forwarded-*` family is informational — there is no protocol guarantee a
 - CRLF appearing in response headers but stripped by an outer proxy before reaching any client or cache
 - Request smuggling indicators that turn out to be normal pipelining or keep-alive behavior
 
-## Impact
+## 影响
 
 - Cross-user cache poisoning (defacement, XSS, account takeover via cached auth response)
 - Account takeover via Host-confused password-reset / OAuth flows
@@ -195,7 +195,7 @@ The `X-Forwarded-*` family is informational — there is no protocol guarantee a
 - Request smuggling — one victim's request reads another victim's response, including auth headers and cookies
 - WAF / detection bypass via header-name and encoding tricks
 
-## Pro Tips
+## 实战技巧
 
 1. The fastest win is usually Host / `X-Forwarded-Host` in a password-reset or OAuth flow — try first, costs one request
 2. For cache poisoning, find the *unkeyed* input first (header that influences body but not cache key); the rest follows
@@ -205,6 +205,6 @@ The `X-Forwarded-*` family is informational — there is no protocol guarantee a
 6. Before claiming a CRLF win, verify the second line landed as a real header in the cache or downstream consumer — many servers strip CRLF silently
 7. Outbound email flows are a separate but related surface — user input flowing into SMTP headers (To, Cc, Subject, Reply-To) is its own injection class with the same root cause
 
-## Summary
+## 总结
 
 Header injection is fundamentally a normalization failure: somewhere on the request → response path, user input reached a header value without CR/LF stripping or proper escaping. The impact tiers up from open redirect to cache poisoning to request smuggling depending on which downstream component trusts the resulting header. Audit every header whose value moves with input, and treat every `X-Forwarded-*` / Host trust as a security boundary that needs explicit justification.

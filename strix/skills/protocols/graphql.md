@@ -1,13 +1,13 @@
 ---
 name: graphql
-description: GraphQL security testing covering introspection, resolver injection, batching attacks, and authorization bypass
+description: 面向 GraphQL 接口的安全测试技能
 ---
 
 # GraphQL
 
 Security testing for GraphQL APIs. Focus on resolver-level authorization, field/edge access control, batching abuse, and federation trust boundaries.
 
-## Attack Surface
+## 攻击面
 
 **Operations**
 - Queries, mutations, subscriptions
@@ -18,7 +18,7 @@ Security testing for GraphQL APIs. Focus on resolver-level authorization, field/
 - WebSocket: graphql-ws, graphql-transport-ws protocols
 - Multipart for file uploads
 
-**Schema Features**
+**Schema 功能**
 - Introspection (`__schema`, `__type`)
 - Directives: `@defer`, `@stream`, custom auth directives (@auth, @private)
 - Custom scalars: Upload, JSON, DateTime
@@ -59,7 +59,7 @@ If disabled, infer schema via:
 
 Map: root operations, object types, interfaces/unions, directives, custom scalars. Identify sensitive fields: email, tokens, roles, billing, API keys, admin flags, file URLs. Note cascade paths where child resolvers may skip auth under parent assumptions.
 
-## Key Vulnerabilities
+## 关键漏洞
 
 ### Authorization Bypass
 
@@ -256,7 +256,7 @@ GET with query params
 - Variable manipulation affecting cache keys
 - Redirects and 304/206 behaviors leaking partial responses
 
-## Testing Methodology
+## 测试方法
 
 1. **Fingerprint** - Identify endpoints, transports, stack (Apollo, Hasura, etc.), GraphiQL exposure
 2. **Schema mapping** - Introspection or inference to build complete type graph
@@ -266,7 +266,7 @@ GET with query params
 6. **Federation probe** - Test `_service` and `_entities` for subgraph auth gaps
 7. **Edge cases** - Cursors, @defer/@stream, subscriptions, file uploads
 
-## Validation Requirements
+## 验证 Requirements
 
 - Paired requests (owner vs non-owner) showing unauthorized access
 - Resolver-level bypass: parent checks present, child field exposes data

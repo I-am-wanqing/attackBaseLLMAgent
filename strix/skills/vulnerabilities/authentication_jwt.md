@@ -1,13 +1,13 @@
 ---
 name: authentication-jwt
-description: JWT and OIDC security testing covering token forgery, algorithm confusion, and claim manipulation
+description: 认证与 JWT 安全测试技能
 ---
 
-# Authentication / JWT / OIDC
+# 认证与 JWT
 
 JWT/OIDC failures often enable token forgery, token confusion, cross-service acceptance, and durable account takeover. Do not trust headers, claims, or token opacity without strict validation bound to issuer, audience, key, and context.
 
-## Attack Surface
+## 攻击面
 
 - Web/mobile/API authentication using JWT (JWS/JWE) and OIDC/OAuth2
 - Access vs ID tokens, refresh tokens, device/PKCE/Backchannel flows
@@ -22,13 +22,13 @@ JWT/OIDC failures often enable token forgery, token confusion, cross-service acc
 - Auth: `/authorize`, `/token`, `/introspect`, `/revoke`, `/logout`, device code endpoints
 - App: `/login`, `/callback`, `/refresh`, `/me`, `/session`, `/impersonate`
 
-### Token Features
+### Token 功能
 
 - Headers: `{"alg":"RS256","kid":"...","typ":"JWT","jku":"...","x5u":"...","jwk":{...}}`
 - Claims: `{"iss":"...","aud":"...","azp":"...","sub":"user","scope":"...","exp":...,"nbf":...,"iat":...}`
 - Formats: JWS (signed), JWE (encrypted). Note unencoded payload option (`"b64":false`) and critical headers (`"crit"`)
 
-## Key Vulnerabilities
+## 关键漏洞
 
 ### Signature Verification
 
@@ -49,7 +49,7 @@ JWT/OIDC failures often enable token forgery, token confusion, cross-service acc
 - Mixed environments: same secrets across dev/stage/prod; key reuse across tenants or services
 - Fallbacks: verification succeeds when kid not found by trying all keys or no keys (implementation bugs)
 
-### Claims Validation Gaps
+### Claims 验证 Gaps
 
 - iss/aud/azp not enforced: cross-service token reuse; accept tokens from any issuer or wrong audience
 - scope/roles fully trusted from token: server does not re-derive authorization; privilege inflation via claim edits when signature checks are weak
@@ -89,7 +89,7 @@ JWT/OIDC failures often enable token forgery, token confusion, cross-service acc
 - Unencoded payload (b64=false) with crit header: libraries mishandle verification paths
 - Nested JWT (JWT-in-JWT) verification order errors; outer token accepted while inner claims ignored
 
-## Special Contexts
+## 特殊场景
 
 ### Mobile
 
@@ -107,7 +107,7 @@ JWT/OIDC failures often enable token forgery, token confusion, cross-service acc
 - Host header poisoning → OIDC redirect_uri poisoning → code capture
 - IDOR in sessions/impersonation endpoints → mint tokens for other users
 
-## Testing Methodology
+## 测试方法
 
 1. **Inventory issuers/consumers** - Identity providers, API gateways, services, mobile/web clients
 2. **Capture tokens** - Access and ID tokens for multiple roles; note header, claims, signature
@@ -116,7 +116,7 @@ JWT/OIDC failures often enable token forgery, token confusion, cross-service acc
 5. **Mutate components** - Headers (alg, kid, jku/x5u/jwk), claims (iss/aud/azp/sub/exp), signatures
 6. **Verify enforcement** - What is actually checked vs assumed
 
-## Validation
+## 验证
 
 1. Show forged or cross-context token acceptance (wrong alg, wrong audience/issuer, or attacker-signed JWKS)
 2. Demonstrate access token vs ID token confusion at an API
@@ -124,21 +124,21 @@ JWT/OIDC failures often enable token forgery, token confusion, cross-service acc
 4. Confirm header abuse (kid/jku/x5u/jwk) leading to key selection under attacker control
 5. Provide owner vs non-owner evidence with identical requests differing only in token context
 
-## False Positives
+## 误报
 
 - Token rejected due to strict audience/issuer enforcement
 - Key pinning with JWKS whitelist and TLS validation
 - Short-lived tokens with rotation and revocation on logout
 - ID token not accepted by APIs that require access tokens
 
-## Impact
+## 影响
 
 - Account takeover and durable session persistence
 - Privilege escalation via claim manipulation or cross-service acceptance
 - Cross-tenant or cross-application data access
 - Token minting by attacker-controlled keys or endpoints
 
-## Pro Tips
+## 实战技巧
 
 1. Pin verification to issuer and audience; log and diff claim sets across services
 2. Attempt RS256→HS256 and "none" first only if algorithm pinning is unclear; otherwise focus on header key control (kid/jku/x5u/jwk)
@@ -151,6 +151,6 @@ JWT/OIDC failures often enable token forgery, token confusion, cross-service acc
 9. Favor minimal PoCs that clearly show cross-context acceptance and durable access
 10. When in doubt, assume verification differs per stack (mobile vs web vs gateway) and test each
 
-## Summary
+## 总结
 
 Verification must bind the token to the correct issuer, audience, key, and client context on every acceptance path. Any missing binding enables forgery or confusion.

@@ -165,6 +165,21 @@ def _format_schema_hint(tool_name: str, required: set[str], optional: set[str]) 
 async def execute_tool_with_validation(
     tool_name: str | None, agent_state: Any | None = None, **kwargs: Any
 ) -> Any:
+    graph_role = getattr(agent_state, "context", {}).get("blackbox_graph_role")
+    if graph_role:
+        allowed_by_role = {
+            "reason": {"think", "agent_finish"},
+            "worker": set(get_tool_names())
+            - {"create_agent", "finish_scan", "create_vulnerability_report"},
+            "reporting": {"think", "create_vulnerability_report", "agent_finish"},
+        }
+        allowed = allowed_by_role.get(graph_role, set())
+        if tool_name not in allowed:
+            return (
+                f"Error: Tool '{tool_name}' is not allowed for black-box graph role "
+                f"'{graph_role}'. Return the result to the orchestrator."
+            )
+
     is_valid, error_msg = validate_tool_availability(tool_name)
     if not is_valid:
         return f"Error: {error_msg}"

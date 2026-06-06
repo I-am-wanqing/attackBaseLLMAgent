@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
 """
-Strix Agent Interface
+Strix 智能体界面
 """
 
 import argparse
 import asyncio
+import json
 import logging
 import os
 import shutil
@@ -20,7 +21,13 @@ from rich.text import Text
 
 from strix.config import Config, apply_saved_config, save_current_config
 from strix.config.config import resolve_llm_config
-from strix.llm.utils import resolve_strix_model
+from strix.llm.utils import (
+    deepseek_completion_kwargs,
+    is_deepseek_model,
+    is_qwen_model,
+    qwen_completion_kwargs,
+    resolve_strix_model,
+)
 
 
 apply_saved_config()
@@ -57,20 +64,29 @@ def validate_environment() -> None:  # noqa: PLR0912, PLR0915
 
     strix_llm = Config.get("strix_llm")
     uses_strix_models = strix_llm and strix_llm.startswith("strix/")
+    uses_qwen_models = is_qwen_model(strix_llm)
+    uses_deepseek_models = is_deepseek_model(strix_llm)
 
     if not strix_llm:
         missing_required_vars.append("STRIX_LLM")
 
     has_base_url = uses_strix_models or any(
         [
+            Config.get("dashscope_api_base") if uses_qwen_models else None,
+            Config.get("deepseek_api_base") if uses_deepseek_models else None,
             Config.get("llm_api_base"),
-            Config.get("openai_api_base"),
             Config.get("litellm_base_url"),
             Config.get("ollama_api_base"),
         ]
     )
 
-    if not Config.get("llm_api_key"):
+    if uses_qwen_models:
+        if not (Config.get("dashscope_api_key") or Config.get("llm_api_key")):
+            missing_optional_vars.append("DASHSCOPE_API_KEY")
+    elif uses_deepseek_models:
+        if not (Config.get("deepseek_api_key") or Config.get("llm_api_key")):
+            missing_optional_vars.append("DEEPSEEK_API_KEY")
+    elif not Config.get("llm_api_key"):
         missing_optional_vars.append("LLM_API_KEY")
 
     if not has_base_url:
@@ -84,78 +100,91 @@ def validate_environment() -> None:  # noqa: PLR0912, PLR0915
 
     if missing_required_vars:
         error_text = Text()
-        error_text.append("MISSING REQUIRED ENVIRONMENT VARIABLES", style="bold red")
+        error_text.append("缺少必需的环境变量", style="bold red")
         error_text.append("\n\n", style="white")
 
         for var in missing_required_vars:
             error_text.append(f"• {var}", style="bold yellow")
-            error_text.append(" is not set\n", style="white")
+            error_text.append(" 未设置\n", style="white")
 
         if missing_optional_vars:
-            error_text.append("\nOptional environment variables:\n", style="dim white")
+            error_text.append("\n可选环境变量：\n", style="dim white")
             for var in missing_optional_vars:
                 error_text.append(f"• {var}", style="dim yellow")
-                error_text.append(" is not set\n", style="dim white")
+                error_text.append(" 未设置\n", style="dim white")
 
-        error_text.append("\nRequired environment variables:\n", style="white")
+        error_text.append("\n必需环境变量：\n", style="white")
         for var in missing_required_vars:
             if var == "STRIX_LLM":
                 error_text.append("• ", style="white")
                 error_text.append("STRIX_LLM", style="bold cyan")
                 error_text.append(
-                    " - Model name to use with litellm (e.g., 'openai/gpt-5.4')\n",
+                    " - LiteLLM 使用的模型名（例如 `qwen3.7-max`）\n",
                     style="white",
                 )
 
         if missing_optional_vars:
-            error_text.append("\nOptional environment variables:\n", style="white")
+            error_text.append("\n可选环境变量：\n", style="white")
             for var in missing_optional_vars:
                 if var == "LLM_API_KEY":
                     error_text.append("• ", style="white")
                     error_text.append("LLM_API_KEY", style="bold cyan")
                     error_text.append(
-                        " - API key for the LLM provider "
-                        "(not needed for local models, Vertex AI, AWS, etc.)\n",
+                        " - LLM 提供方的 API 密钥"
+                        "（本地模型、Vertex AI、AWS 等场景可能不需要）\n",
                         style="white",
                     )
                 elif var == "LLM_API_BASE":
                     error_text.append("• ", style="white")
                     error_text.append("LLM_API_BASE", style="bold cyan")
                     error_text.append(
-                        " - Custom API base URL if using local models (e.g., Ollama, LMStudio)\n",
+                        " - 自定义 API Base URL（本地模型时使用，例如 Ollama、LM Studio）\n",
                         style="white",
                     )
+                elif var == "DASHSCOPE_API_KEY":
+                    error_text.append("• ", style="white")
+                    error_text.append("DASHSCOPE_API_KEY", style="bold cyan")
+                    error_text.append(" - Qwen（阿里云百炼）模型的 API 密钥\n", style="white")
                 elif var == "PERPLEXITY_API_KEY":
                     error_text.append("• ", style="white")
                     error_text.append("PERPLEXITY_API_KEY", style="bold cyan")
                     error_text.append(
-                        " - API key for Perplexity AI web search (enables real-time research)\n",
+                        " - Perplexity AI 网页搜索的 API 密钥（启用实时检索）\n",
                         style="white",
                     )
                 elif var == "STRIX_REASONING_EFFORT":
                     error_text.append("• ", style="white")
                     error_text.append("STRIX_REASONING_EFFORT", style="bold cyan")
                     error_text.append(
-                        " - Reasoning effort level: none, minimal, low, medium, high, xhigh "
-                        "(default: high)\n",
+                        " - 推理强度：none、minimal、low、medium、high、xhigh "
+                        "（默认：high）\n",
                         style="white",
                     )
+                elif var == "DEEPSEEK_API_KEY":
+                    error_text.append("• ", style="white")
+                    error_text.append("DEEPSEEK_API_KEY", style="bold cyan")
+                    error_text.append(" - DeepSeek 模型的 API 密钥\n", style="white")
 
-        error_text.append("\nExample setup:\n", style="white")
-        error_text.append("export STRIX_LLM='openai/gpt-5.4'\n", style="dim white")
+        error_text.append("\n示例配置：\n", style="white")
+        error_text.append("export STRIX_LLM='deepseek-v4-pro'\n", style="dim white")
 
         if missing_optional_vars:
             for var in missing_optional_vars:
                 if var == "LLM_API_KEY":
                     error_text.append(
                         "export LLM_API_KEY='your-api-key-here'  "
-                        "# not needed for local models, Vertex AI, AWS, etc.\n",
+                        "# 本地模型、Vertex AI、AWS 等场景可能不需要\n",
                         style="dim white",
                     )
                 elif var == "LLM_API_BASE":
                     error_text.append(
                         "export LLM_API_BASE='http://localhost:11434'  "
-                        "# needed for local models only\n",
+                        "# 仅本地模型需要\n",
+                        style="dim white",
+                    )
+                elif var == "DASHSCOPE_API_KEY":
+                    error_text.append(
+                        "export DASHSCOPE_API_KEY='your-dashscope-api-key-here'\n",
                         style="dim white",
                     )
                 elif var == "PERPLEXITY_API_KEY":
@@ -165,6 +194,11 @@ def validate_environment() -> None:  # noqa: PLR0912, PLR0915
                 elif var == "STRIX_REASONING_EFFORT":
                     error_text.append(
                         "export STRIX_REASONING_EFFORT='high'\n",
+                        style="dim white",
+                    )
+                elif var == "DEEPSEEK_API_KEY":
+                    error_text.append(
+                        "export DEEPSEEK_API_KEY='your-deepseek-key-here'\n",
                         style="dim white",
                     )
 
@@ -186,12 +220,10 @@ def check_docker_installed() -> None:
     if shutil.which("docker") is None:
         console = Console()
         error_text = Text()
-        error_text.append("DOCKER NOT INSTALLED", style="bold red")
+        error_text.append("未安装 Docker", style="bold red")
         error_text.append("\n\n", style="white")
-        error_text.append("The 'docker' CLI was not found in your PATH.\n", style="white")
-        error_text.append(
-            "Please install Docker and ensure the 'docker' command is available.\n\n", style="white"
-        )
+        error_text.append("在你的 PATH 中未找到 `docker` 命令。\n", style="white")
+        error_text.append("请安装 Docker，并确认 `docker` 命令可用。\n\n", style="white")
 
         panel = Panel(
             error_text,
@@ -213,8 +245,8 @@ async def warm_up_llm() -> None:
         litellm_model = litellm_model or model_name
 
         test_messages = [
-            {"role": "system", "content": "You are a helpful assistant."},
-            {"role": "user", "content": "Reply with just 'OK'."},
+            {"role": "system", "content": "你是一个乐于助人的助手。"},
+            {"role": "user", "content": "只回复“OK”。"},
         ]
 
         llm_timeout = int(Config.get("llm_timeout") or "300")
@@ -228,6 +260,12 @@ async def warm_up_llm() -> None:
             completion_kwargs["api_key"] = api_key
         if api_base:
             completion_kwargs["api_base"] = api_base
+        if is_qwen_model(model_name):
+            completion_kwargs.update(qwen_completion_kwargs())
+        elif is_deepseek_model(model_name):
+            completion_kwargs.update(
+                deepseek_completion_kwargs(Config.get("strix_reasoning_effort"))
+            )
 
         response = litellm.completion(**completion_kwargs)
 
@@ -235,11 +273,11 @@ async def warm_up_llm() -> None:
 
     except Exception as e:  # noqa: BLE001
         error_text = Text()
-        error_text.append("LLM CONNECTION FAILED", style="bold red")
+        error_text.append("LLM 连接失败", style="bold red")
         error_text.append("\n\n", style="white")
-        error_text.append("Could not establish connection to the language model.\n", style="white")
-        error_text.append("Please check your configuration and try again.\n", style="white")
-        error_text.append(f"\nError: {e}", style="dim white")
+        error_text.append("无法连接到语言模型。\n", style="white")
+        error_text.append("请检查你的配置后重试。\n", style="white")
+        error_text.append(f"\n错误：{e}", style="dim white")
 
         panel = Panel(
             error_text,
@@ -266,34 +304,34 @@ def get_version() -> str:
 
 def parse_arguments() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
-        description="Strix Multi-Agent Cybersecurity Penetration Testing Tool",
+        description="Strix 多智能体网络安全渗透测试工具",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
-Examples:
-  # Web application penetration test
+示例：
+  # Web 应用渗透测试
   strix --target https://example.com
 
-  # GitHub repository analysis
+  # GitHub 仓库分析
   strix --target https://github.com/user/repo
   strix --target git@github.com:user/repo.git
 
-  # Local code analysis
+  # 本地代码分析
   strix --target ./my-project
 
-  # Domain penetration test
+  # 域名渗透测试
   strix --target example.com
 
-  # IP address penetration test
+  # IP 地址渗透测试
   strix --target 192.168.1.42
 
-  # Multiple targets (e.g., white-box testing with source and deployed app)
+  # 多目标（例如：白盒测试中的源码与已部署应用）
   strix --target https://github.com/user/repo --target https://example.com
   strix --target ./my-project --target https://staging.example.com --target https://prod.example.com
 
-  # Custom instructions (inline)
+  # 自定义指令（直接填写）
   strix --target example.com --instruction "Focus on authentication vulnerabilities"
 
-  # Custom instructions (from file)
+  # 自定义指令（来自文件）
   strix --target example.com --instruction-file ./instructions.txt
   strix --target https://app.com --instruction-file /path/to/detailed_instructions.md
         """,
@@ -310,28 +348,32 @@ Examples:
         "-t",
         "--target",
         type=str,
-        required=True,
+        required=False,
         action="append",
-        help="Target to test (URL, repository, local directory path, domain name, or IP address). "
-        "Can be specified multiple times for multi-target scans.",
+        help="要测试的目标（URL、仓库、本地目录、域名或 IP 地址）。"
+        "可重复指定以进行多目标扫描。",
+    )
+    parser.add_argument(
+        "--resume",
+        type=str,
+        help="恢复指定 run-name 的黑盒状态图扫描。",
     )
     parser.add_argument(
         "--instruction",
         type=str,
-        help="Custom instructions for the penetration test. This can be "
-        "specific vulnerability types to focus on (e.g., 'Focus on IDOR and XSS'), "
-        "testing approaches (e.g., 'Perform thorough authentication testing'), "
-        "test credentials (e.g., 'Use the following credentials to access the app: "
-        "admin:password123'), "
-        "or areas of interest (e.g., 'Check login API endpoint for security issues').",
+        help="渗透测试的自定义指令。可以指定要聚焦的漏洞类型"
+        "（例如：`Focus on IDOR and XSS`）、测试方法"
+        "（例如：`Perform thorough authentication testing`）、"
+        "测试凭据（例如：`Use the following credentials to access the app: admin:password123`），"
+        "或关注区域（例如：`Check login API endpoint for security issues`）。",
     )
 
     parser.add_argument(
         "--instruction-file",
         type=str,
-        help="Path to a file containing detailed custom instructions for the penetration test. "
-        "Use this option when you have lengthy or complex instructions saved in a file "
-        "(e.g., '--instruction-file ./detailed_instructions.txt').",
+        help="包含详细自定义指令的文件路径。"
+        "当指令较长或较复杂并已保存到文件时使用此选项"
+        "（例如：`--instruction-file ./detailed_instructions.txt`）。",
     )
 
     parser.add_argument(
@@ -339,8 +381,8 @@ Examples:
         "--non-interactive",
         action="store_true",
         help=(
-            "Run in non-interactive mode (no TUI, exits on completion). "
-            "Default is interactive mode with TUI."
+            "以非交互模式运行（不显示 TUI，完成后退出）。"
+            "默认是带 TUI 的交互模式。"
         ),
     )
 
@@ -349,13 +391,13 @@ Examples:
         "--scan-mode",
         type=str,
         choices=["quick", "standard", "deep"],
-        default="deep",
+        default=None,
         help=(
-            "Scan mode: "
-            "'quick' for fast CI/CD checks, "
-            "'standard' for routine testing, "
-            "'deep' for thorough security reviews (default). "
-            "Default: deep."
+            "扫描模式："
+            "`quick` 用于快速 CI/CD 检查，"
+            "`standard` 用于常规测试，"
+            "`deep` 用于深入安全审查（默认）。"
+            "默认值：`deep`。"
         ),
     )
 
@@ -365,10 +407,10 @@ Examples:
         choices=["auto", "diff", "full"],
         default="auto",
         help=(
-            "Scope mode for code targets: "
-            "'auto' enables PR diff-scope in CI/headless runs, "
-            "'diff' forces changed-files scope, "
-            "'full' disables diff-scope."
+            "代码目标的范围模式："
+            "`auto` 在 CI/无头运行中启用 PR diff-scope，"
+            "`diff` 强制使用变更文件范围，"
+            "`full` 关闭 diff-scope。"
         ),
     )
 
@@ -376,22 +418,22 @@ Examples:
         "--diff-base",
         type=str,
         help=(
-            "Target branch or commit to compare against (e.g., origin/main). "
-            "Defaults to the repository's default branch."
+            "用于比较的目标分支或提交（例如：`origin/main`）。"
+            "默认使用仓库的默认分支。"
         ),
     )
 
     parser.add_argument(
         "--config",
         type=str,
-        help="Path to a custom config file (JSON) to use instead of ~/.strix/cli-config.json",
+        help="自定义配置文件（JSON）路径，用于替代 `~/.strix/cli-config.json`。",
     )
 
     args = parser.parse_args()
 
     if args.instruction and args.instruction_file:
         parser.error(
-            "Cannot specify both --instruction and --instruction-file. Use one or the other."
+            "不能同时指定 --instruction 和 --instruction-file，请二选一。"
         )
 
     if args.instruction_file:
@@ -400,12 +442,17 @@ Examples:
             with instruction_path.open(encoding="utf-8") as f:
                 args.instruction = f.read().strip()
                 if not args.instruction:
-                    parser.error(f"Instruction file '{instruction_path}' is empty")
+                    parser.error(f"指令文件 “{instruction_path}” 为空")
         except Exception as e:  # noqa: BLE001
-            parser.error(f"Failed to read instruction file '{instruction_path}': {e}")
+            parser.error(f"读取指令文件“{instruction_path}”失败：{e}")
+
+    if not args.target and not args.resume:
+        parser.error("必须指定至少一个 --target，或使用 --resume <run-name>")
+    if args.target and args.resume:
+        parser.error("--target 与 --resume 不能同时使用")
 
     args.targets_info = []
-    for target in args.target:
+    for target in args.target or []:
         try:
             target_type, target_dict = infer_target_type(target)
 
@@ -418,10 +465,22 @@ Examples:
                 {"type": target_type, "details": target_dict, "original": display_target}
             )
         except ValueError:
-            parser.error(f"Invalid target '{target}'")
+            parser.error(f"无效目标“{target}”")
 
-    assign_workspace_subdirs(args.targets_info)
-    rewrite_localhost_targets(args.targets_info, HOST_GATEWAY_HOSTNAME)
+    if args.resume:
+        snapshot_path = Path("strix_runs") / args.resume / "state_graph" / "snapshot.json"
+        if not snapshot_path.exists():
+            parser.error(f"未找到可恢复的状态图：{snapshot_path}")
+        try:
+            snapshot = json.loads(snapshot_path.read_text(encoding="utf-8"))
+            args.targets_info = snapshot["targets"]
+            args.scan_mode = args.scan_mode or snapshot.get("scan_mode", "deep")
+        except (OSError, KeyError, json.JSONDecodeError, TypeError) as exc:
+            parser.error(f"无法读取状态图快照：{exc}")
+    else:
+        args.scan_mode = args.scan_mode or "deep"
+        assign_workspace_subdirs(args.targets_info)
+        rewrite_localhost_targets(args.targets_info, HOST_GATEWAY_HOSTNAME)
 
     return args
 
@@ -436,17 +495,17 @@ def display_completion_message(args: argparse.Namespace, results_path: Path) -> 
 
     completion_text = Text()
     if scan_completed:
-        completion_text.append("Penetration test completed", style="bold #22c55e")
+        completion_text.append("渗透测试已完成", style="bold #22c55e")
     else:
-        completion_text.append("SESSION ENDED", style="bold #eab308")
+        completion_text.append("会话已结束", style="bold #eab308")
 
     target_text = Text()
-    target_text.append("Target", style="dim")
+    target_text.append("目标", style="dim")
     target_text.append("  ")
     if len(args.targets_info) == 1:
         target_text.append(args.targets_info[0]["original"], style="bold white")
     else:
-        target_text.append(f"{len(args.targets_info)} targets", style="bold white")
+        target_text.append(f"{len(args.targets_info)} 个目标", style="bold white")
         for target_info in args.targets_info:
             target_text.append("\n        ")
             target_text.append(target_info["original"], style="white")
@@ -460,7 +519,7 @@ def display_completion_message(args: argparse.Namespace, results_path: Path) -> 
 
     results_text = Text()
     results_text.append("\n")
-    results_text.append("Output", style="dim")
+    results_text.append("输出", style="dim")
     results_text.append("  ")
     results_text.append(str(results_path), style="#60a5fa")
     panel_parts.extend(["\n", results_text])
@@ -492,11 +551,11 @@ def pull_docker_image() -> None:
         return
 
     console.print()
-    console.print(f"[dim]Pulling image[/] {Config.get('strix_image')}")
-    console.print("[dim yellow]This only happens on first run and may take a few minutes...[/]")
+    console.print(f"[dim]正在拉取镜像[/] {Config.get('strix_image')}")
+    console.print("[dim yellow]这只会在首次运行时发生，可能需要几分钟...[/]")
     console.print()
 
-    with console.status("[bold cyan]Downloading image layers...", spinner="dots") as status:
+    with console.status("[bold cyan]正在下载镜像层...", spinner="dots") as status:
         try:
             layers_info: dict[str, str] = {}
             last_update = ""
@@ -507,9 +566,9 @@ def pull_docker_image() -> None:
         except DockerException as e:
             console.print()
             error_text = Text()
-            error_text.append("FAILED TO PULL IMAGE", style="bold red")
+            error_text.append("镜像拉取失败", style="bold red")
             error_text.append("\n\n", style="white")
-            error_text.append(f"Could not download: {Config.get('strix_image')}\n", style="white")
+            error_text.append(f"无法下载：{Config.get('strix_image')}\n", style="white")
             error_text.append(str(e), style="dim red")
 
             panel = Panel(
@@ -523,14 +582,14 @@ def pull_docker_image() -> None:
             sys.exit(1)
 
     success_text = Text()
-    success_text.append("Docker image ready", style="#22c55e")
+    success_text.append("Docker 镜像已就绪", style="#22c55e")
     console.print(success_text)
     console.print()
 
 
 def apply_config_override(config_path: str) -> None:
-    # Clear env vars that were automatically applied from the default config file
-    # so they don't leak into the custom config context.
+    # 清理默认配置文件自动写入的环境变量
+    # 这样它们就不会泄漏到自定义配置上下文中。
     for var_name in Config._applied_from_default:
         os.environ.pop(var_name, None)
     Config._applied_from_default = {}
@@ -561,7 +620,7 @@ def main() -> None:  # noqa: PLR0912, PLR0915
 
     persist_config()
 
-    args.run_name = generate_run_name(args.targets_info)
+    args.run_name = args.resume or generate_run_name(args.targets_info)
 
     for target_info in args.targets_info:
         if target_info["type"] == "repository":
@@ -581,7 +640,7 @@ def main() -> None:  # noqa: PLR0912, PLR0915
     except ValueError as e:
         console = Console()
         error_text = Text()
-        error_text.append("DIFF SCOPE RESOLUTION FAILED", style="bold red")
+        error_text.append("diff scope 解析失败", style="bold red")
         error_text.append("\n\n", style="white")
         error_text.append(str(e), style="white")
 

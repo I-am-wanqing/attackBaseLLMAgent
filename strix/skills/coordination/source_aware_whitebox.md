@@ -1,9 +1,9 @@
 ---
 name: source-aware-whitebox
-description: Coordination playbook for source-aware white-box testing with static triage and dynamic validation
+description: 面向白盒场景的源码感知协调策略
 ---
 
-# Source-Aware White-Box Coordination
+# 源码感知白盒协调
 
 Use this coordination playbook when repository source code is available.
 
@@ -61,7 +61,7 @@ Recommended sections:
 - Static scanner summary
 - Dynamic validation follow-ups
 
-## Validation Guardrails
+## 验证 Guardrails
 
 - Static findings are hypotheses until validated.
 - Dynamic exploitation evidence is still required before vulnerability reporting.

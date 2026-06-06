@@ -1,13 +1,13 @@
 ---
 name: business-logic
-description: Business logic testing for workflow bypass, state manipulation, and domain invariant violations
+description: 业务逻辑安全测试技能
 ---
 
-# Business Logic Flaws
+# 业务逻辑漏洞
 
 Business logic flaws exploit intended functionality to violate domain invariants: move money without paying, exceed limits, retain privileges, or bypass reviews. They require a model of the business, not just payloads.
 
-## Attack Surface
+## 攻击面
 
 - Financial logic: pricing, discounts, payments, refunds, credits, chargebacks
 - Account lifecycle: signup, upgrade/downgrade, trial, suspension, deletion
@@ -47,7 +47,7 @@ Business logic flaws exploit intended functionality to violate domain invariants
 - Out-of-order: call finalize before verify; refund before capture; cancel after ship
 - Time windows: end-of-day/month cutovers, daylight saving, grace periods, trial expiry edges
 
-## Key Vulnerabilities
+## 关键漏洞
 
 ### State Machine Abuse
 
@@ -109,7 +109,7 @@ Business logic flaws exploit intended functionality to violate domain invariants
 - Client recomputation: totals, taxes, discounts computed on client and accepted by server
 - Cache/gateway differentials: stale decisions from CDN/APIM that are not identity-aware
 
-## Special Contexts
+## 特殊场景
 
 ### E-commerce
 
@@ -132,7 +132,7 @@ Business logic flaws exploit intended functionality to violate domain invariants
 - Business logic + IDOR: operate on others' resources once a workflow leak reveals IDs
 - Business logic + CSRF: force a victim to complete a sensitive step sequence
 
-## Testing Methodology
+## 测试方法
 
 1. **Enumerate state machine** - Per critical workflow (states, transitions, pre/post-conditions); note invariants
 2. **Build Actor × Action × Resource matrix** - Unauth, basic user, premium, staff/admin; identify actions per role
@@ -140,27 +140,27 @@ Business logic flaws exploit intended functionality to violate domain invariants
 4. **Introduce variance** - Time, concurrency, channel (mobile/web/API/GraphQL), content-types
 5. **Validate persistence boundaries** - All services, queues, and jobs re-enforce invariants
 
-## Validation
+## 验证
 
 1. Show an invariant violation (e.g., two refunds for one charge, negative inventory, exceeding quotas)
 2. Provide side-by-side evidence for intended vs abused flows with the same principal
 3. Demonstrate durability: the undesired state persists and is observable in authoritative sources (ledger, emails, admin views)
 4. Quantify impact per action and at scale (unit loss × feasible repetitions)
 
-## False Positives
+## 误报
 
 - Promotional behavior explicitly allowed by policy (documented free trials, goodwill credits)
 - Visual-only inconsistencies with no durable or exploitable state change
 - Admin-only operations with proper audit and approvals
 
-## Impact
+## 影响
 
 - Direct financial loss (fraud, arbitrage, over-refunds, unpaid consumption)
 - Regulatory/contractual violations (billing accuracy, consumer protection)
 - Denial of inventory/services to legitimate users through resource exhaustion
 - Privilege retention or unauthorized access to premium features
 
-## Pro Tips
+## 实战技巧
 
 1. Start from invariants and ledgers, not UI—prove conservation of value breaks
 2. Test with time and concurrency; many bugs only appear under pressure
@@ -173,6 +173,6 @@ Business logic flaws exploit intended functionality to violate domain invariants
 9. Chain with authorization tests (IDOR/Function-level access) to magnify impact
 10. When in doubt, map the state machine; gaps appear where transitions lack server-side guards
 
-## Summary
+## 总结
 
 Business logic security is the enforcement of domain invariants under adversarial sequencing, timing, and inputs. If any step trusts the client or prior steps, expect abuse.

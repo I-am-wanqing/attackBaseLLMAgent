@@ -55,20 +55,64 @@ STRIX_MODEL_MAP: dict[str, str] = {
 
 
 def resolve_strix_model(model_name: str | None) -> tuple[str | None, str | None]:
-    """Resolve a strix/ model into names for API calls and capability lookups.
+    """Resolve a model into names for API calls and capability lookups.
 
     Returns (api_model, canonical_model):
     - api_model: openai/<base> for API calls (Strix API is OpenAI-compatible)
     - canonical_model: actual provider model name for litellm capability lookups
     Non-strix models return the same name for both.
     """
-    if not model_name or not model_name.startswith("strix/"):
+    if not model_name:
+        return model_name, model_name
+
+    if model_name.startswith("qwen/"):
+        base_model = model_name.split("/", 1)[1]
+        return f"openai/{base_model}", base_model
+
+    if model_name.startswith("qwen-") or model_name.lower().startswith("qwen"):
+        return f"openai/{model_name}", model_name
+
+    if model_name.startswith("deepseek/"):
+        base_model = model_name.split("/", 1)[1]
+        return f"openai/{base_model}", base_model
+
+    if model_name.startswith("deepseek-"):
+        return f"openai/{model_name}", model_name
+
+    if not model_name.startswith("strix/"):
         return model_name, model_name
 
     base_model = model_name[6:]
     api_model = f"openai/{base_model}"
     canonical_model = STRIX_MODEL_MAP.get(base_model, api_model)
     return api_model, canonical_model
+
+
+def is_deepseek_model(model_name: str | None) -> bool:
+    if not model_name:
+        return False
+    normalized = model_name.lower()
+    return normalized.startswith(("deepseek/", "deepseek-"))
+
+
+def is_qwen_model(model_name: str | None) -> bool:
+    if not model_name:
+        return False
+    normalized = model_name.lower()
+    return normalized.startswith(("qwen/", "qwen-", "qwen"))
+
+
+def qwen_completion_kwargs() -> dict[str, Any]:
+    return {
+        "extra_body": {"enable_thinking": True},
+    }
+
+
+def deepseek_completion_kwargs(reasoning_effort: str | None = None) -> dict[str, Any]:
+    return {
+        "reasoning_effort": reasoning_effort or "high",
+        "extra_body": {"thinking": {"type": "enabled"}},
+    }
 
 
 def _truncate_to_first_function(content: str) -> str:

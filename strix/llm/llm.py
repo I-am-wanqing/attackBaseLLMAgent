@@ -14,9 +14,13 @@ from strix.llm.config import LLMConfig
 from strix.llm.memory_compressor import MemoryCompressor, get_message_tokens
 from strix.llm.utils import (
     _truncate_to_first_function,
+    deepseek_completion_kwargs,
     fix_incomplete_tool_call,
+    is_deepseek_model,
+    is_qwen_model,
     normalize_tool_format,
     parse_tool_invocations,
+    qwen_completion_kwargs,
 )
 from strix.skills import load_skills
 from strix.tools import get_tools_prompt
@@ -286,7 +290,11 @@ class LLM:
             args["api_key"] = self.config.api_key
         if self.config.api_base:
             args["api_base"] = self.config.api_base
-        if self._supports_reasoning():
+        if is_qwen_model(self.config.model_name):
+            args.update(qwen_completion_kwargs())
+        elif is_deepseek_model(self.config.model_name):
+            args.update(deepseek_completion_kwargs(self._reasoning_effort))
+        elif self._supports_reasoning():
             args["reasoning_effort"] = self._reasoning_effort
 
         return args
@@ -297,7 +305,7 @@ class LLM:
         return ""
 
     def _extract_thinking(self, chunks: list[Any]) -> list[dict[str, Any]] | None:
-        if not chunks or not self._supports_reasoning():
+        if not chunks:
             return None
         try:
             resp = stream_chunk_builder(chunks)
@@ -305,8 +313,30 @@ class LLM:
                 blocks: list[dict[str, Any]] = resp.choices[0].message.thinking_blocks
                 return blocks
         except Exception:  # noqa: BLE001, S110  # nosec B110
-            pass
+            if is_qwen_model(self.config.model_name):
+                reasoning_text = self._collect_qwen_reasoning(chunks)
+                if reasoning_text:
+                    return [{"type": "reasoning_content", "content": reasoning_text}]
+            return None
+        if is_qwen_model(self.config.model_name):
+            reasoning_text = self._collect_qwen_reasoning(chunks)
+            if reasoning_text:
+                return [{"type": "reasoning_content", "content": reasoning_text}]
         return None
+
+    def _collect_qwen_reasoning(self, chunks: list[Any]) -> str:
+        reasoning_parts: list[str] = []
+        for chunk in chunks:
+            choices = getattr(chunk, "choices", None)
+            if not choices:
+                continue
+            delta = getattr(choices[0], "delta", None)
+            if not delta:
+                continue
+            reasoning_content = getattr(delta, "reasoning_content", None)
+            if reasoning_content:
+                reasoning_parts.append(str(reasoning_content))
+        return "".join(reasoning_parts)
 
     def _update_usage_stats(self, response: Any) -> None:
         try:

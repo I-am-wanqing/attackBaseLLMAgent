@@ -11,6 +11,7 @@ from rich.panel import Panel
 from rich.text import Text
 
 from strix.agents.StrixAgent import StrixAgent
+from strix.blackbox_graph import BlackboxGraphOrchestrator, is_pure_blackbox_scan
 from strix.llm.config import LLMConfig
 from strix.telemetry.tracer import Tracer, set_global_tracer
 
@@ -24,27 +25,27 @@ async def run_cli(args: Any) -> None:  # noqa: PLR0915
     console = Console()
 
     start_text = Text()
-    start_text.append("Penetration test initiated", style="bold #22c55e")
+    start_text.append("渗透测试已启动", style="bold #22c55e")
 
     target_text = Text()
-    target_text.append("Target", style="dim")
+    target_text.append("目标", style="dim")
     target_text.append("  ")
     if len(args.targets_info) == 1:
         target_text.append(args.targets_info[0]["original"], style="bold white")
     else:
-        target_text.append(f"{len(args.targets_info)} targets", style="bold white")
+        target_text.append(f"{len(args.targets_info)} 个目标", style="bold white")
         for target_info in args.targets_info:
             target_text.append("\n        ")
             target_text.append(target_info["original"], style="white")
 
     results_text = Text()
-    results_text.append("Output", style="dim")
+    results_text.append("输出", style="dim")
     results_text.append("  ")
     results_text.append(f"strix_runs/{args.run_name}", style="#60a5fa")
 
     note_text = Text()
     note_text.append("\n\n", style="dim")
-    note_text.append("Vulnerabilities will be displayed in real-time.", style="dim")
+    note_text.append("漏洞会实时显示。", style="dim")
 
     startup_panel = Panel(
         Text.assemble(
@@ -128,7 +129,7 @@ async def run_cli(args: Any) -> None:  # noqa: PLR0915
 
     def create_live_status() -> Panel:
         status_text = Text()
-        status_text.append("Penetration test in progress", style="bold #22c55e")
+        status_text.append("渗透测试进行中", style="bold #22c55e")
         status_text.append("\n\n")
 
         stats_text = build_live_stats_text(tracer, agent_config)
@@ -163,14 +164,23 @@ async def run_cli(args: Any) -> None:  # noqa: PLR0915
             update_thread.start()
 
             try:
-                agent = StrixAgent(agent_config)
-                result = await agent.execute_scan(scan_config)
+                if is_pure_blackbox_scan(scan_config, getattr(args, "local_sources", None)):
+                    orchestrator = BlackboxGraphOrchestrator(
+                        scan_config,
+                        scan_mode=scan_mode,
+                        interactive=False,
+                        resume=bool(getattr(args, "resume", None)),
+                    )
+                    result = await orchestrator.run()
+                else:
+                    agent = StrixAgent(agent_config)
+                    result = await agent.execute_scan(scan_config)
 
                 if isinstance(result, dict) and not result.get("success", True):
-                    error_msg = result.get("error", "Unknown error")
+                    error_msg = result.get("error", "未知错误")
                     error_details = result.get("details")
                     console.print()
-                    console.print(f"[bold red]Penetration test failed:[/] {error_msg}")
+                    console.print(f"[bold red]渗透测试失败：[/] {error_msg}")
                     if error_details:
                         console.print(f"[dim]{error_details}[/]")
                     console.print()
@@ -180,14 +190,14 @@ async def run_cli(args: Any) -> None:  # noqa: PLR0915
                 update_thread.join(timeout=1)
 
     except Exception as e:
-        console.print(f"[bold red]Error during penetration test:[/] {e}")
+        console.print(f"[bold red]渗透测试过程中出错：[/] {e}")
         raise
 
     if tracer.final_scan_result:
         console.print()
 
         final_report_text = Text()
-        final_report_text.append("Penetration test summary", style="bold #60a5fa")
+        final_report_text.append("渗透测试摘要", style="bold #60a5fa")
 
         final_report_panel = Panel(
             Text.assemble(

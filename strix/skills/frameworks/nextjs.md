@@ -1,13 +1,13 @@
 ---
 name: nextjs
-description: Security testing playbook for Next.js covering App Router, Server Actions, RSC, and Edge runtime vulnerabilities
+description: 面向 Next.js 应用的安全测试技能
 ---
 
 # Next.js
 
 Security testing for Next.js applications. Focus on authorization drift across runtimes (Edge/Node), caching boundaries, server actions, and middleware bypass.
 
-## Attack Surface
+## 攻击面
 
 **Routers**
 - App Router (`app/`) and Pages Router (`pages/`) often coexist
@@ -81,7 +81,7 @@ Inspect Network tab for POST requests with `Next-Action` header. Extract action 
 - `/sitemap.xml`, `/robots.txt`, `/sitemap-*.xml` for unintended admin/internal/preview paths
 - Client bundles/env for secret paths and preview/admin flags (many teams hide routes via UI only)
 
-## Key Vulnerabilities
+## 关键漏洞
 
 ### Middleware Bypass
 
@@ -187,13 +187,13 @@ Look for `_metadata`, `_internal`, `__typename` (GraphQL), nested sensitive obje
 - `dangerouslySetInnerHTML`
 - Markdown renderers
 - User-controlled href/src attributes
-- Validate CSP/Trusted Types coverage for SSR/CSR/hydration
+- Validate CSP/Trusted 类型 coverage for SSR/CSR/hydration
 
 **Hydration Mismatches**
 
 Server vs client render differences can enable gadget-based XSS.
 
-### Draft/Preview Mode
+### Draft/Preview 模式
 
 - Secret URLs/cookies enabling preview
 - Preview secrets leaked in client bundles/env
@@ -206,7 +206,7 @@ Server vs client render differences can enable gadget-based XSS.
 - Case/param aliasing and query duplication affecting middleware vs handler parsing
 - Cache key confusion at CDN/proxy (lack of Vary on auth cookies/headers)
 
-## Testing Methodology
+## 测试方法
 
 1. **Enumerate** - Use `__BUILD_MANIFEST`, source maps, build artifacts, sitemap/robots to map all routes
 2. **Runtime matrix** - Test each route under Edge and Node runtimes
@@ -215,7 +215,7 @@ Server vs client render differences can enable gadget-based XSS.
 5. **Middleware validation** - Test path variants and header manipulation for bypass
 6. **Cross-router** - Compare authorization between App Router and Pages Router paths
 
-## Validation Requirements
+## 验证 Requirements
 
 - Side-by-side requests showing cross-user/tenant access
 - Cache boundary failure proof (response diffs, ETag collisions)

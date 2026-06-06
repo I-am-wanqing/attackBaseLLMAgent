@@ -1,9 +1,9 @@
 ---
 name: katana
-description: Katana crawler syntax, depth/js/known-files behavior, and stable concurrency controls.
+description: Katana 爬虫工具的使用指南
 ---
 
-# Katana CLI Playbook
+# Katana 工具指南
 
 Official docs:
 - https://docs.projectdiscovery.io/opensource/katana/usage

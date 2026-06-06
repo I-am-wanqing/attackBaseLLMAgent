@@ -1,9 +1,9 @@
 ---
 name: naabu
-description: Naabu port-scanning syntax with host input, scan-type, verification, and rate controls.
+description: Naabu 端口扫描工具的使用指南
 ---
 
-# Naabu CLI Playbook
+# Naabu 工具指南
 
 Official docs:
 - https://docs.projectdiscovery.io/opensource/naabu/usage

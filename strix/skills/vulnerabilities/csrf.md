@@ -1,15 +1,15 @@
 ---
 name: csrf
-description: CSRF testing covering token bypass, SameSite cookies, CORS misconfigurations, and state-changing request abuse
+description: CSRF 安全测试技能
 ---
 
-# CSRF
+# CSRF / 跨站请求伪造
 
 Cross-site request forgery abuses ambient authority (cookies, HTTP auth) across origins. Do not rely on CORS alone; enforce non-replayable tokens and strict origin checks for every state change.
 
-## Attack Surface
+## 攻击面
 
-**Session Types**
+**Session 类型**
 - Web apps with cookie-based sessions and HTTP auth
 - JSON/REST, GraphQL (GET/persisted queries), file upload endpoints
 
@@ -44,7 +44,7 @@ Cross-site request forgery abuses ambient authority (cookies, HTTP auth) across 
 - Verify server checks Origin and/or Referer on state changes
 - Test null/missing and cross-origin values
 
-### Method and Content-Types
+### Method and Content-类型
 
 - Confirm whether GET, HEAD, or OPTIONS perform state changes
 - Try simple content-types to avoid preflight: `application/x-www-form-urlencoded`, `multipart/form-data`, `text/plain`
@@ -56,7 +56,7 @@ Cross-site request forgery abuses ambient authority (cookies, HTTP auth) across 
 - Overly permissive CORS is not a CSRF fix and can turn CSRF into data exfiltration
 - Test per-endpoint CORS differences; preflight vs simple request behavior can diverge
 
-## Key Vulnerabilities
+## 关键漏洞
 
 ### Navigation CSRF
 
@@ -135,7 +135,7 @@ Cross-site request forgery abuses ambient authority (cookies, HTTP auth) across 
 - Test null Origin acceptance
 - Leverage misconfigured CORS to add custom headers that servers mistakenly treat as CSRF tokens
 
-## Special Contexts
+## 特殊场景
 
 ### Mobile/SPA
 
@@ -153,7 +153,7 @@ Cross-site request forgery abuses ambient authority (cookies, HTTP auth) across 
 - CSRF + Clickjacking: guide user interactions to bypass UI confirmations
 - CSRF + OAuth mix-up: bind victim sessions to unintended clients
 
-## Testing Methodology
+## 测试方法
 
 1. **Inventory endpoints** - All state-changing endpoints including admin/staff
 2. **Note request details** - Method, content-type, whether reachable via simple requests
@@ -163,7 +163,7 @@ Cross-site request forgery abuses ambient authority (cookies, HTTP auth) across 
 6. **Test navigation** - Top-level GET navigation
 7. **Cross-browser validation** - Behavior differs by SameSite and navigation context
 
-## Validation
+## 验证
 
 1. Demonstrate a cross-origin page that triggers a state change without user interaction beyond visiting
 2. Show that removing the anti-CSRF control (token/header) is accepted, or that Origin/Referer are not verified
@@ -171,19 +171,19 @@ Cross-site request forgery abuses ambient authority (cookies, HTTP auth) across 
 4. Provide before/after state evidence for the same account
 5. If defenses exist, show the exact condition under which they are bypassed (content-type, method override, null Origin)
 
-## False Positives
+## 误报
 
 - Token verification present and required; Origin/Referer enforced consistently
 - No cookies sent on cross-site requests (SameSite=Strict, no HTTP auth) and no state change via simple requests
 - Only idempotent, non-sensitive operations affected
 
-## Impact
+## 影响
 
 - Account state changes (email/password/MFA), session hijacking via login CSRF
 - Financial operations, administrative actions
 - Durable authorization changes (role/permission flips, key rotations) and data loss
 
-## Pro Tips
+## 实战技巧
 
 1. Prefer preflightless vectors (form-encoded, multipart, text/plain) and top-level GET if available
 2. Test login/logout, OAuth connect/disconnect, and account linking first
@@ -193,6 +193,6 @@ Cross-site request forgery abuses ambient authority (cookies, HTTP auth) across 
 6. Always try method overrides and parser differentials
 7. Combine with clickjacking when visual confirmations block CSRF
 
-## Summary
+## 总结
 
 CSRF is eliminated only when state changes require a secret the attacker cannot supply and the server verifies the caller's origin. Tokens and Origin checks must hold across methods, content-types, and transports.

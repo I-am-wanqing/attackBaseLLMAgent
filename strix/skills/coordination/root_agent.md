@@ -1,9 +1,9 @@
 ---
 name: root-agent
-description: Orchestration layer that coordinates specialized subagents for security assessments
+description: 协调安全评估的编排层 Agent
 ---
 
-# Root Agent
+# 根 Agent
 
 Orchestration layer for security assessments. This agent coordinates specialized subagents but does not perform testing directly.
 
@@ -41,9 +41,9 @@ Structure agents by function:
 - Business logic flaws
 - Infrastructure vulnerabilities
 
-**Exploitation and Validation**
+**Exploitation and 验证**
 - Proof-of-concept development
-- Impact demonstration
+- 影响 demonstration
 - Vulnerability chaining
 
 **Reporting**
@@ -71,7 +71,7 @@ Before creating agents:
 
 Complex findings warrant specialized subagents:
 - Discovery agent finds potential vulnerability
-- Validation agent confirms exploitability
+- 验证 agent confirms exploitability
 - Reporting agent documents with reproduction steps
 - Fix agent provides remediation (if needed)
 

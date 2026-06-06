@@ -4,6 +4,12 @@ from typing import Any
 import litellm
 
 from strix.config.config import Config, resolve_llm_config
+from strix.llm.utils import (
+    deepseek_completion_kwargs,
+    is_deepseek_model,
+    is_qwen_model,
+    qwen_completion_kwargs,
+)
 
 
 logger = logging.getLogger(__name__)
@@ -104,7 +110,7 @@ def _summarize_messages(
     conversation = "\n".join(formatted)
     prompt = SUMMARY_PROMPT_TEMPLATE.format(conversation=conversation)
 
-    _, api_key, api_base = resolve_llm_config()
+    configured_model, api_key, api_base = resolve_llm_config()
 
     try:
         completion_args: dict[str, Any] = {
@@ -116,6 +122,12 @@ def _summarize_messages(
             completion_args["api_key"] = api_key
         if api_base:
             completion_args["api_base"] = api_base
+        if is_qwen_model(configured_model):
+            completion_args.update(qwen_completion_kwargs())
+        elif is_deepseek_model(configured_model):
+            completion_args.update(
+                deepseek_completion_kwargs(Config.get("strix_reasoning_effort"))
+            )
 
         response = litellm.completion(**completion_args)
         summary = response.choices[0].message.content or ""

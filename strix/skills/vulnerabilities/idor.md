@@ -1,13 +1,13 @@
 ---
 name: idor
-description: IDOR/BOLA testing for object-level authorization failures and cross-account data access
+description: IDOR/BOLA 安全测试技能
 ---
 
-# IDOR
+# IDOR / 对象级访问控制
 
 Object-level authorization failures (BOLA/IDOR) lead to cross-account data exposure and unauthorized state changes across APIs, web, mobile, and microservices. Treat every object reference as untrusted until proven bound to the caller.
 
-## Attack Surface
+## 攻击面
 
 **Scope**
 - Horizontal access: access another subject's objects of the same type
@@ -55,11 +55,11 @@ Object-level authorization failures (BOLA/IDOR) lead to cross-account data expos
 - Case/aliasing: userId vs userid vs USER_ID; alt names like resourceId, targetId, account
 - Path traversal-like in virtual file systems: `/files/user_123/../../user_456/report.csv`
 
-**UUID/Opaque ID Sources**
+**UUID/Opaque ID 来源**
 - Logs, exports, JS bundles, analytics endpoints, emails, public activity
 - Time-based IDs (UUIDv1, ULID) may be guessable within a window
 
-## Key Vulnerabilities
+## 关键漏洞
 
 ### Horizontal & Vertical Access
 
@@ -164,7 +164,7 @@ query IDOR {
 - IDOR + SSRF: exfiltrate internal IDs, then access their corresponding resources
 - IDOR + Race: bypass spot checks with simultaneous requests
 
-## Testing Methodology
+## 测试方法
 
 1. **Build matrix** - Subject × Object × Action matrix (who can do what to which resource)
 2. **Obtain principals** - At least two: owner and non-owner (plus admin/staff if applicable)
@@ -173,7 +173,7 @@ query IDOR {
 5. **Transport variation** - Test across web, mobile, API, GraphQL, WebSocket, gRPC
 6. **Consistency check** - Same rule must hold regardless of transport, content-type, serialization, or gateway
 
-## Validation
+## 验证
 
 1. Demonstrate access to an object not owned by the caller (content or metadata)
 2. Show the same request fails with appropriately enforced authorization when corrected
@@ -181,7 +181,7 @@ query IDOR {
 4. Document tenant boundary violations (if applicable)
 5. Provide reproducible steps and evidence (requests/responses for owner vs non-owner)
 
-## False Positives
+## 误报
 
 - Public/anonymous resources by design
 - Soft-privatized data where content is already public
@@ -189,14 +189,14 @@ query IDOR {
 - Correct row-level checks enforced across all channels
 - Empty array / null returned for another user's resource — silent enforcement, not exposure; compare against the owner's view to confirm the data is actually missing rather than just hidden from the response shape
 
-## Impact
+## 影响
 
 - Cross-account data exposure (PII/PHI/PCI)
 - Unauthorized state changes (transfers, role changes, cancellations)
 - Cross-tenant data leaks violating contractual and regulatory boundaries
 - Regulatory risk (GDPR/HIPAA/PCI), fraud, reputational damage
 
-## Pro Tips
+## 实战技巧
 
 1. Always test list/search/export endpoints first; they are rich ID seeders
 2. Build a reusable ID corpus from logs, notifications, emails, and client bundles
@@ -209,6 +209,6 @@ query IDOR {
 9. Use timing/size/ETag differentials for blind confirmation when content is masked
 10. Prove impact with precise before/after diffs and role-separated evidence
 
-## Summary
+## 总结
 
 Authorization must bind subject, action, and specific object on every request, regardless of identifier opacity or transport. If the binding is missing anywhere, the system is vulnerable.

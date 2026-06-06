@@ -65,12 +65,12 @@ def parse_code_locations_xml(xml_str: str) -> list[dict[str, Any]] | None:
 
 def _validate_file_path(path: str) -> str | None:
     if not path or not path.strip():
-        return "file path cannot be empty"
+        return "文件路径不能为空"
     p = PurePosixPath(path)
     if p.is_absolute():
-        return f"file path must be relative, got absolute: '{path}'"
+        return f"文件路径必须是相对路径，不能是绝对路径：'{path}'"
     if ".." in p.parts:
-        return f"file path must not contain '..': '{path}'"
+        return f"文件路径不能包含 '..'：'{path}'"
     return None
 
 
@@ -100,7 +100,7 @@ def _extract_cve(cve: str) -> str:
 
 def _validate_cve(cve: str) -> str | None:
     if not re.match(r"^CVE-\d{4}-\d{4,}$", cve):
-        return f"invalid CVE format: '{cve}' (expected 'CVE-YYYY-NNNNN')"
+        return f"CVE 格式无效：'{cve}'（应为 'CVE-YYYY-NNNNN'）"
     return None
 
 
@@ -111,7 +111,7 @@ def _extract_cwe(cwe: str) -> str:
 
 def _validate_cwe(cwe: str) -> str | None:
     if not re.match(r"^CWE-\d+$", cwe):
-        return f"invalid CWE format: '{cwe}' (expected 'CWE-NNN')"
+        return f"CWE 格式无效：'{cwe}'（应为 'CWE-NNN'）"
     return None
 
 
@@ -146,7 +146,7 @@ def calculate_cvss_and_severity(
     except Exception:
         import logging
 
-        logging.exception("Failed to calculate CVSS")
+        logging.exception("计算 CVSS 失败")
         return 7.5, "high", ""
     else:
         return base_score, severity, vector
@@ -156,14 +156,14 @@ def _validate_required_fields(**kwargs: str | None) -> list[str]:
     validation_errors: list[str] = []
 
     required_fields = {
-        "title": "Title cannot be empty",
-        "description": "Description cannot be empty",
-        "impact": "Impact cannot be empty",
-        "target": "Target cannot be empty",
-        "technical_analysis": "Technical analysis cannot be empty",
-        "poc_description": "PoC description cannot be empty",
-        "poc_script_code": "PoC script/code is REQUIRED - provide the actual exploit/payload",
-        "remediation_steps": "Remediation steps cannot be empty",
+        "title": "标题不能为空",
+        "description": "描述不能为空",
+        "impact": "影响不能为空",
+        "target": "目标不能为空",
+        "technical_analysis": "技术分析不能为空",
+        "poc_description": "概念验证说明不能为空",
+        "poc_script_code": "必须提供概念验证脚本/代码 - 请给出实际的利用代码或载荷",
+        "remediation_steps": "修复建议不能为空",
     }
 
     for field_name, error_msg in required_fields.items():
@@ -192,7 +192,7 @@ def _validate_cvss_parameters(**kwargs: str) -> list[str]:
         value = kwargs.get(param_name)
         if value not in valid_values:
             validation_errors.append(
-                f"Invalid {param_name}: {value}. Must be one of: {valid_values}"
+                f"{param_name} 无效：{value}。必须是以下值之一：{valid_values}"
             )
 
     return validation_errors
@@ -228,7 +228,7 @@ def create_vulnerability_report(  # noqa: PLR0912
 
     parsed_cvss = parse_cvss_xml(cvss_breakdown)
     if not parsed_cvss:
-        validation_errors.append("cvss: could not parse CVSS breakdown XML")
+        validation_errors.append("cvss：无法解析 CVSS 拆解 XML")
     else:
         validation_errors.extend(_validate_cvss_parameters(**parsed_cvss))
 
@@ -248,7 +248,7 @@ def create_vulnerability_report(  # noqa: PLR0912
             validation_errors.append(cwe_err)
 
     if validation_errors:
-        return {"success": False, "message": "Validation failed", "errors": validation_errors}
+        return {"success": False, "message": "校验失败", "errors": validation_errors}
 
     assert parsed_cvss is not None
     cvss_score, severity, cvss_vector = calculate_cvss_and_severity(**parsed_cvss)
@@ -282,14 +282,14 @@ def create_vulnerability_report(  # noqa: PLR0912
                 duplicate_title = ""
                 for report in existing_reports:
                     if report.get("id") == duplicate_id:
-                        duplicate_title = report.get("title", "Unknown")
+                        duplicate_title = report.get("title", "未知")
                         break
 
                 return {
                     "success": False,
                     "message": (
-                        f"Potential duplicate of '{duplicate_title}' "
-                        f"(id={duplicate_id[:8]}...). Do not re-report the same vulnerability."
+                        f"疑似与 '{duplicate_title}' 重复 "
+                        f"(id={duplicate_id[:8]}...)。请不要重复报告同一个漏洞。"
                     ),
                     "duplicate_of": duplicate_id,
                     "duplicate_title": duplicate_title,
@@ -318,7 +318,7 @@ def create_vulnerability_report(  # noqa: PLR0912
 
             return {
                 "success": True,
-                "message": f"Vulnerability report '{title}' created successfully",
+                "message": f"漏洞报告 '{title}' 创建成功",
                 "report_id": report_id,
                 "severity": severity,
                 "cvss_score": cvss_score,
@@ -326,13 +326,13 @@ def create_vulnerability_report(  # noqa: PLR0912
 
         import logging
 
-        logging.warning("Current tracer not available - vulnerability report not stored")
+        logging.warning("当前 tracer 不可用 - 漏洞报告未保存")
 
     except (ImportError, AttributeError) as e:
-        return {"success": False, "message": f"Failed to create vulnerability report: {e!s}"}
+        return {"success": False, "message": f"创建漏洞报告失败：{e!s}"}
     else:
         return {
             "success": True,
-            "message": f"Vulnerability report '{title}' created (not persisted)",
-            "warning": "Report could not be persisted - tracer unavailable",
+            "message": f"漏洞报告 '{title}' 已创建（未持久化）",
+            "warning": "报告无法持久化 - tracer 不可用",
         }

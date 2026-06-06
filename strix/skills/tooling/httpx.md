@@ -1,9 +1,9 @@
 ---
 name: httpx
-description: ProjectDiscovery httpx probing syntax, exact probe flags, and automation-safe output patterns.
+description: httpx HTTP 探测工具的使用指南
 ---
 
-# httpx CLI Playbook
+# httpx 工具指南
 
 Official docs:
 - https://docs.projectdiscovery.io/opensource/httpx/usage

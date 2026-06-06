@@ -389,6 +389,15 @@ def create_agent(
     skills: str | None = None,
 ) -> dict[str, Any]:
     try:
+        if getattr(agent_state, "context", {}).get("blackbox_graph_worker"):
+            return {
+                "success": False,
+                "error": (
+                    "Black-box state graph workers cannot create subagents; "
+                    "return follow-ups to the orchestrator."
+                ),
+                "agent_id": None,
+            }
         parent_id = agent_state.agent_id
 
         from strix.skills import parse_skill_list, validate_requested_skills

@@ -71,7 +71,7 @@ class ListRequestsRenderer(BaseToolRenderer):
 
         if status == "completed" and isinstance(result, dict):
             if "error" in result:
-                text.append(f"  error: {_sanitize(str(result['error']), 150)}", style="#ef4444")
+                text.append(f"  错误：{_sanitize(str(result['error']), 150)}", style="#ef4444")
             else:
                 total = result.get("total_count", 0)
                 requests = result.get("requests", [])
@@ -138,7 +138,7 @@ class ViewRequestRenderer(BaseToolRenderer):
 
         if status == "completed" and isinstance(result, dict):
             if "error" in result:
-                text.append(f"  error: {_sanitize(str(result['error']), 150)}", style="#ef4444")
+                text.append(f"  错误：{_sanitize(str(result['error']), 150)}", style="#ef4444")
             elif "matches" in result:
                 matches = result.get("matches", [])
                 total = result.get("total_matches", len(matches))
@@ -241,7 +241,7 @@ class SendRequestRenderer(BaseToolRenderer):
 
         if status == "completed" and isinstance(result, dict):
             if "error" in result:
-                text.append(f"\n  error: {_sanitize(str(result['error']), 150)}", style="#ef4444")
+                text.append(f"\n  错误：{_sanitize(str(result['error']), 150)}", style="#ef4444")
             else:
                 code = result.get("status_code")
                 time_ms = result.get("response_time_ms")
@@ -333,7 +333,7 @@ class RepeatRequestRenderer(BaseToolRenderer):
 
         if status == "completed" and isinstance(result, dict):
             if "error" in result:
-                text.append(f"\n  error: {_sanitize(str(result['error']), 150)}", style="#ef4444")
+                text.append(f"\n  错误：{_sanitize(str(result['error']), 150)}", style="#ef4444")
             else:
                 req = result.get("request", {})
                 method = req.get("method", "")
@@ -419,7 +419,7 @@ class ScopeRulesRenderer(BaseToolRenderer):
 
         if status == "completed" and isinstance(result, dict):
             if "error" in result:
-                text.append(f"  error: {_sanitize(str(result['error']), 150)}", style="#ef4444")
+                text.append(f"  错误：{_sanitize(str(result['error']), 150)}", style="#ef4444")
             elif "scopes" in result:
                 scopes = result.get("scopes", [])
                 text.append(f"  [{len(scopes)} scopes]", style="dim")
@@ -493,7 +493,7 @@ class ListSitemapRenderer(BaseToolRenderer):
 
         if status == "completed" and isinstance(result, dict):
             if "error" in result:
-                text.append(f"  error: {_sanitize(str(result['error']), 150)}", style="#ef4444")
+                text.append(f"  错误：{_sanitize(str(result['error']), 150)}", style="#ef4444")
             else:
                 total = result.get("total_count", 0)
                 entries = result.get("entries", [])
@@ -567,7 +567,7 @@ class ViewSitemapEntryRenderer(BaseToolRenderer):
 
         if status == "completed" and isinstance(result, dict):
             if "error" in result:
-                text.append(f"  error: {_sanitize(str(result['error']), 150)}", style="#ef4444")
+                text.append(f"  错误：{_sanitize(str(result['error']), 150)}", style="#ef4444")
             elif "entry" in result:
                 entry = result.get("entry") or {}
                 if not isinstance(entry, dict):

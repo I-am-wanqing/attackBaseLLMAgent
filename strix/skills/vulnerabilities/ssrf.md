@@ -1,38 +1,38 @@
 ---
 name: ssrf
-description: SSRF testing for cloud metadata access, internal service discovery, and protocol smuggling
+description: SSRF 安全测试技能
 ---
 
-# SSRF
+# SSRF / 服务器端请求伪造
 
-Server-Side Request Forgery enables the server to reach networks and services the attacker cannot. Focus on cloud metadata endpoints, service meshes, Kubernetes, and protocol abuse to turn a single fetch into credentials, lateral movement, and sometimes RCE.
+服务器端请求伪造会让服务器去访问攻击者无法直达的网络和服务。重点关注云元数据端点、服务网格、Kubernetes 和协议滥用，把一次普通抓取变成凭据获取、横向移动，甚至在某些情况下演变为 RCE。
 
-## Attack Surface
+## 攻击面
 
-**Scope**
-- Outbound HTTP/HTTPS fetchers (proxies, previewers, importers, webhook testers)
-- Non-HTTP protocols via URL handlers (gopher, dict, file, ftp, smb wrappers)
-- Service-to-service hops through gateways and sidecars (envoy/nginx)
-- Cloud and platform metadata endpoints, instance services, and control planes
+**范围**
+- 对外发起 HTTP/HTTPS 请求的功能（代理、预览器、导入器、webhook 测试器）
+- 通过 URL handler 触发的非 HTTP 协议（gopher、dict、file、ftp、smb 封装器）
+- 通过网关和 sidecar 的服务间跳转（envoy/nginx）
+- 云平台和平台元数据端点、实例服务以及控制平面
 
-**Direct URL Params**
+**直接 URL 参数**
 - `url=`, `link=`, `fetch=`, `src=`, `webhook=`, `avatar=`, `image=`
 
-**Indirect Sources**
+**间接来源**
 - Open Graph/link previews, PDF/image renderers
 - Server-side analytics (Referer trackers), import/export jobs
 - Webhooks/callback verifiers
 
-**Protocol-Translating Services**
+**协议转换服务**
 - PDF via wkhtmltopdf/Chrome headless, image pipelines
 - Document parsers, SSO validators, archive expanders
 
-**Less Obvious**
+**不那么明显的场景**
 - GraphQL resolvers that fetch by URL
 - Background crawlers, repository/package managers (git, npm, pip)
 - Calendar (ICS) fetchers
 
-## High-Value Targets
+## 高价值目标
 
 ### AWS
 
@@ -61,7 +61,7 @@ Server-Side Request Forgery enables the server to reach networks and services th
 - Authorization often needs service account token; SSRF that propagates headers/cookies may reuse them
 - Service discovery: attempt cluster DNS names (`svc.cluster.local`) and default services (kube-dns, metrics-server)
 
-### Internal Services
+### 内部服务
 
 - Docker API: `http://localhost:2375/v1.24/containers/json` (no TLS variants often internal-only)
 - Redis/Memcached: `dict://localhost:11211/stat`, gopher payloads to Redis on 6379
@@ -69,9 +69,9 @@ Server-Side Request Forgery enables the server to reach networks and services th
 - Message brokers/admin UIs: RabbitMQ, Kafka REST, Celery/Flower, Jenkins crumb APIs
 - FastCGI/PHP-FPM: `gopher://localhost:9000/` (craft records for file write/exec when app routes to FPM)
 
-## Key Vulnerabilities
+## 关键漏洞
 
-### Protocol Exploitation
+### 协议利用
 
 **Gopher**
 - Speak raw text protocols (Redis/SMTP/IMAP/HTTP/FCGI)
@@ -81,31 +81,31 @@ Server-Side Request Forgery enables the server to reach networks and services th
 - `file:///etc/passwd`, `file:///proc/self/environ` when libraries allow file handlers
 - `jar:`, `netdoc:`, `smb://` and language-specific wrappers (`php://`, `expect://`) where enabled
 
-### Address Variants
+### 地址变体
 
 - Loopback: `127.0.0.1`, `127.1`, `2130706433`, `0x7f000001`, `::1`, `[::ffff:127.0.0.1]`
 - RFC1918/link-local: 10/8, 172.16/12, 192.168/16, 169.254/16
 - Test IPv6-mapped and mixed-notation forms
 
-### URL Confusion
+### URL 混淆
 
 - Userinfo and fragments: `http://internal@attacker/` or `http://attacker#@internal/`
 - Scheme-less/relative forms the server might complete internally: `//169.254.169.254/`
 - Trailing dots and mixed case: `internal.` vs `INTERNAL`, Unicode dot lookalikes
 
-### Redirect Abuse
+### 重定向滥用
 
 - Allowlist only applied pre-redirect: 302 from attacker → internal host
 - Test multi-hop and protocol switches (http→file/gopher via custom clients)
 
-### Header and Method Control
+### 头部与方法控制
 
 - Some sinks reflect or allow CRLF-injection into the request line/headers
 - If arbitrary headers/methods are possible, IMDSv2, GCP, and Azure become reachable
 
-## Bypass Techniques
+## 绕过技巧
 
-**Address Encoding**
+**地址编码**
 - Decimal, hex, octal representations of IP addresses
 - IPv6 variants, IPv4-mapped IPv6, mixed notation
 
@@ -113,70 +113,70 @@ Server-Side Request Forgery enables the server to reach networks and services th
 - First resolution returns allowed IP, second returns internal target
 - Use short TTL DNS records under attacker control
 
-**URL Parser Differentials**
+**URL 解析器差异**
 - Different parsing between allowlist checker and actual fetcher
 - Exploit inconsistencies in scheme, host, port, path handling
 
-**Redirect Chains**
+**重定向链**
 - Initial URL passes allowlist, redirect targets internal host
 - Protocol downgrade/upgrade through redirects
 
-## Blind SSRF
+## 盲 SSRF
 
-- Use OAST (DNS/HTTP) to confirm egress
-- Derive internal reachability from timing, response size, TLS errors, and ETag differences
-- Build a port map by binary searching timeouts (short connect/read timeouts yield cleaner diffs)
+- 使用 OAST（DNS/HTTP）确认外联
+- 通过时延、响应大小、TLS 错误和 ETag 差异推断内网可达性
+- 通过二分超时构建端口映射（较短的连接/读取超时会带来更清晰的差异）
 
-## Chaining Attacks
+## 链式攻击
 
 - SSRF → Metadata creds → cloud API access (list buckets, read secrets)
 - SSRF → Redis/FCGI/Docker → file write/command execution → shell
 - SSRF → Kubelet/API → pod list/logs → token/secret discovery → lateral movement
 
-## Testing Methodology
+## 测试方法
 
-1. **Identify surfaces** - Every user-influenced URL/host/path across web/mobile/API and background jobs
-2. **Establish oracle** - Quiet OAST DNS/HTTP callbacks first
-3. **Internal addressing** - Pivot to loopback, RFC1918, link-local, IPv6, hostnames
-4. **Protocol variations** - Test gopher, file, dict where supported
-5. **Parser differentials** - Test across frameworks, CDNs, and language libraries
-6. **Redirect behavior** - Single-hop, multi-hop, protocol switches
-7. **Header/method control** - Can you influence request headers or HTTP method?
-8. **High-value targets** - Metadata, kubelet, Redis, FastCGI, Docker, Vault, internal admin panels
+1. **识别攻击面** - Web/移动/API 和后台任务中所有受用户影响的 URL/主机/路径
+2. **建立判定器** - 先使用安静的 OAST DNS/HTTP 回调
+3. **内网地址尝试** - 转向 loopback、RFC1918、link-local、IPv6、主机名
+4. **协议变体** - 在支持时测试 gopher、file、dict
+5. **解析器差异** - 在框架、CDN 和语言库之间测试
+6. **重定向行为** - 单跳、多跳、协议切换
+7. **头部/方法控制** - 能否影响请求头或 HTTP 方法？
+8. **高价值目标** - 元数据、kubelet、Redis、FastCGI、Docker、Vault、内部管理面板
 
-## Validation
+## 验证
 
-1. Prove an outbound server-initiated request occurred (OAST interaction or internal-only response differences)
-2. Show access to non-public resources (metadata, internal admin, service ports) from the vulnerable service
-3. Where possible, demonstrate minimal-impact credential access (short-lived token) or a harmless internal data read
-4. Confirm reproducibility and document request parameters that control scheme/host/headers/method and redirect behavior
+1. 证明确实发生了服务器发起的对外请求（OAST 交互或仅内网可见的响应差异）
+2. 展示从漏洞服务访问了非公开资源（元数据、内部管理接口、服务端口）
+3. 在可能时，演示最小影响的凭据访问（短生命周期令牌）或无害的内部数据读取
+4. 确认可复现，并记录控制 scheme/host/headers/method 与重定向行为的请求参数
 
-## False Positives
+## 误报
 
-- Client-side fetches only (no server request)
-- Strict allowlists with DNS pinning and no redirect following
-- SSRF simulators/mocks returning canned responses without real egress
-- Blocked egress confirmed by uniform errors across all targets and protocols
-- OAST callbacks where the source IP matches the tester's machine, not the server — the browser or a client-side fetch made the request, not the backend
+- 仅有客户端发起的 fetch（没有服务器请求）
+- 严格白名单、DNS pinning 且不跟随重定向
+- SSRF 模拟器/Mock 仅返回预设响应，没有真实外联
+- 所有目标和协议都返回一致错误，证明外联被阻断
+- OAST 回调的源 IP 是测试机而不是服务器时，说明是浏览器或客户端 fetch 发起了请求，而不是后端
 
-## Impact
+## 影响
 
-- Cloud credential disclosure with subsequent control-plane/API access
-- Access to internal control panels and data stores not exposed publicly
-- Lateral movement into Kubernetes, service meshes, and CI/CD
-- RCE via protocol abuse (FCGI, Redis), Docker daemon access, or scriptable admin interfaces
+- 云端凭据泄露，随后可访问控制平面/API
+- 访问未公开的内部控制面板和数据存储
+- 横向移动到 Kubernetes、服务网格和 CI/CD
+- 通过协议滥用（FCGI、Redis）、Docker 守护进程访问或可脚本化的管理接口实现 RCE
 
-## Pro Tips
+## 实战技巧
 
-1. Prefer OAST callbacks first; then iterate on internal addressing and protocols
-2. Test IPv6 and mixed-notation addresses; filters often ignore them
-3. Observe library/client differences (curl, Java HttpClient, Node, Go); behavior changes across services and jobs
-4. Redirects are leverage: control both the initial allowlisted host and the next hop
-5. Metadata endpoints require headers/methods; verify if your sink can set them or if intermediaries add them
-6. Use tiny payloads and tight timeouts to map ports with minimal noise
-7. When responses are masked, diff length/ETag/status and TLS error classes to infer reachability
-8. Chain quickly to durable impact (short-lived tokens, harmless internal reads) and stop there
+1. 先优先使用 OAST 回调；然后再迭代内网地址和协议
+2. 测试 IPv6 和混合记法地址；过滤器经常忽略它们
+3. 观察不同库/客户端（curl、Java HttpClient、Node、Go）的差异；行为在不同服务和任务中会变化
+4. 重定向很关键：同时控制起始的白名单主机和下一跳
+5. 元数据端点需要头部/方法；确认落点是否能设置，或者中间件是否会自动添加
+6. 用小载荷和紧超时来以最少噪声绘制端口图
+7. 当响应被掩盖时，通过长度/ETag/status 和 TLS 错误类别的差异推断可达性
+8. 快速链到持久影响（短生命周期令牌、无害内部读取）后就停止
 
-## Summary
+## 总结
 
-Any feature that fetches remote content on behalf of a user is a potential tunnel to internal networks and control planes. Bind scheme/host/port/headers explicitly or expect an attacker to route through them.
+任何代表用户抓取远程内容的功能，都可能成为通往内网和控制平面的隧道。请显式绑定 scheme/host/port/headers，否则就要准备面对攻击者借道转发。

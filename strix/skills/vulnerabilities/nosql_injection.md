@@ -1,13 +1,13 @@
 ---
 name: nosql-injection
-description: NoSQL injection testing covering MongoDB operator injection, authentication bypass, blind extraction, GraphQL variable injection, and Redis/DynamoDB/Elasticsearch/Neo4j-specific attack surfaces
+description: NoSQL 注入安全测试技能
 ---
 
-# NoSQL Injection
+# NoSQL 注入
 
 NoSQL injection exploits the mismatch between how applications pass user input to database queries and how the database engine interprets that input. Unlike SQL injection, NoSQL injection frequently involves operator injection (e.g., MongoDB's `$gt`, `$regex`, `$where`) or structure injection (embedding JSON sub-documents). The attack surface is broad: MongoDB is the dominant target, but Redis, Elasticsearch, DynamoDB, Cassandra, CouchDB, and Neo4j each have distinct injection surfaces. GraphQL resolvers passing variables directly into a backing NoSQL filter are a frequent cross-cutting vector.
 
-## Attack Surface
+## 攻击面
 
 **Input shapes that reach query filters**
 - JSON body parameters parsed straight into query objects
@@ -44,7 +44,7 @@ MongoDB (primary), Redis, Elasticsearch, DynamoDB, Cassandra, CouchDB, Neo4j. Co
 
 - Send malformed JSON: `{"username": {"$gt": ""}}`
 - Send bracket notation in form data: `username[$gt]=`
-- Look for MongoDB error messages: `MongoError`, `CastError`, `ValidationError`
+- Look for MongoDB error messages: `MongoError`, `CastError`, `验证Error`
 - Stack traces revealing collection names, field names, driver version
 
 ### Operator Probe
@@ -55,7 +55,7 @@ Test whether operators pass through to the database:
 ```
 If authentication succeeds or response differs, operator injection is confirmed.
 
-## Key Vulnerabilities
+## 关键漏洞
 
 ### MongoDB Authentication Bypass
 
@@ -237,7 +237,7 @@ DoS surface (use only with explicit authorization scope):
 - Prototype pollution: `__proto__` and `constructor.prototype` keys in JSON bodies polluting Object prototypes consumed downstream by query builders
 - `$regex` case-insensitive flag (`"$options": "i"`) widens matches that case-sensitive filters miss
 
-## Testing Methodology
+## 测试方法
 
 1. **Identify query-receiving endpoints** — login, search, filter, lookup
 2. **Determine input format** — JSON body vs form fields vs URL params
@@ -250,7 +250,7 @@ DoS surface (use only with explicit authorization scope):
 9. **Test non-MongoDB stores** — Elasticsearch `query_string`, Redis command construction, DynamoDB PartiQL, CouchDB Mango selectors, Neo4j Cypher concatenation, Cassandra CQL
 10. **Test GraphQL resolvers** — submit operator objects via variables on any input type that reaches a NoSQL filter; use `__schema` introspection to enumerate candidates
 
-## Validation
+## 验证
 
 1. Demonstrate authentication bypass: send operator payload, confirm login succeeds for any/first account
 2. Extract a verifiable secret (password hash, reset token, API key) via `$regex` blind extraction
@@ -258,14 +258,14 @@ DoS surface (use only with explicit authorization scope):
 4. Provide before/after: normal request returns 401, injected request returns 200
 5. For `$where`: show timing differential with/without `sleep()`
 
-## False Positives
+## 误报
 
 - Framework-level query builder that casts input to string before constructing the query (Mongoose `strict` mode on)
 - Input sanitization stripping operator keys before they reach the driver
 - Endpoints that accept JSON but cast the `password` field to string — operator object becomes `[object Object]`
 - Response differences caused by validation errors, not actual operator execution
 
-## Impact
+## 影响
 
 - Authentication bypass granting access to arbitrary or all accounts
 - Full extraction of sensitive fields (tokens, hashed passwords, PII) via blind regex enumeration
@@ -273,7 +273,7 @@ DoS surface (use only with explicit authorization scope):
 - Data exfiltration at scale via widened `$ne`/`$regex`/`$gt` filters
 - Server-side JavaScript execution via `$where` on unpatched MongoDB instances
 
-## Pro Tips
+## 实战技巧
 
 1. Always try both JSON body (`{"field": {"$ne": null}}`) and bracket-notation form (`field[$ne]=`) — different middleware handles them differently
 2. Target reset token and API key fields with `$regex` extraction, not just passwords
@@ -283,6 +283,6 @@ DoS surface (use only with explicit authorization scope):
 6. Automate `$regex` extraction with binary search: 7 requests per character vs 94 with linear search
 7. GraphQL resolvers are an underexplored entry point — try operator objects in any input type that reaches a NoSQL filter, and use introspection to find candidate fields
 
-## Summary
+## 总结
 
 NoSQL injection exploits the same root cause as SQL injection — user input controlling query structure — but through operator embedding rather than syntax breaking. MongoDB is the primary target; enforce schema validation, use parameterized equivalents (strict mode, typed schemas), and never pass raw user input as a query object.

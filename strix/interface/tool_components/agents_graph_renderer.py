@@ -18,7 +18,7 @@ class ViewAgentGraphRenderer(BaseToolRenderer):
 
         text = Text()
         text.append("◇ ", style="#a78bfa")
-        text.append("viewing agents graph", style="dim")
+        text.append("正在查看智能体图", style="dim")
 
         css_classes = cls.get_css_classes(status)
         return Static(text, classes=css_classes)
@@ -39,7 +39,7 @@ class CreateAgentRenderer(BaseToolRenderer):
 
         text = Text()
         text.append("◈ ", style="#a78bfa")
-        text.append("spawning ", style="dim")
+        text.append("正在创建 ", style="dim")
         text.append(name, style="bold #a78bfa")
 
         if task:
@@ -66,9 +66,9 @@ class SendMessageToAgentRenderer(BaseToolRenderer):
         text = Text()
         text.append("→ ", style="#60a5fa")
         if agent_id:
-            text.append(f"to {agent_id}", style="dim")
+            text.append(f"发送给 {agent_id}", style="dim")
         else:
-            text.append("sending message", style="dim")
+            text.append("正在发送消息", style="dim")
 
         if message:
             text.append("\n  ")
@@ -95,10 +95,10 @@ class AgentFinishRenderer(BaseToolRenderer):
 
         if success:
             text.append("◆ ", style="#22c55e")
-            text.append("Agent completed", style="bold #22c55e")
+            text.append("智能体已完成", style="bold #22c55e")
         else:
             text.append("◆ ", style="#ef4444")
-            text.append("Agent failed", style="bold #ef4444")
+            text.append("智能体失败", style="bold #ef4444")
 
         if result_summary:
             text.append("\n  ")
@@ -110,7 +110,7 @@ class AgentFinishRenderer(BaseToolRenderer):
                     text.append(str(finding), style="dim")
         else:
             text.append("\n  ")
-            text.append("Completing task...", style="dim")
+            text.append("正在完成任务...", style="dim")
 
         css_classes = cls.get_css_classes("completed")
         return Static(text, classes=css_classes)
@@ -130,7 +130,7 @@ class WaitForMessageRenderer(BaseToolRenderer):
 
         text = Text()
         text.append("○ ", style="#6b7280")
-        text.append("waiting", style="dim")
+        text.append("等待中", style="dim")
 
         if reason:
             text.append("\n  ")

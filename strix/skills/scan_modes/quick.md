@@ -1,9 +1,9 @@
 ---
 name: quick
-description: Time-boxed rapid assessment targeting high-impact vulnerabilities
+description: 适用于快速检查的轻量扫描策略
 ---
 
-# Quick Testing Mode
+# 快速扫描模式
 
 Time-boxed assessment focused on high-impact vulnerabilities. Prioritize breadth over depth.
 
@@ -30,7 +30,7 @@ Optimize for fast feedback on critical security issues. Skip exhaustive enumerat
 - Identify exposed endpoints and entry points
 - Skip deep content discovery—test what's immediately accessible
 
-## Phase 2: High-Impact Targets
+## Phase 2: High-影响 Targets
 
 Test in priority order:
 
@@ -47,7 +47,7 @@ Skip for quick scans:
 - Low-severity information disclosure
 - Theoretical issues without working PoC
 
-## Phase 3: Validation
+## Phase 3: 验证
 
 - Confirm exploitability with minimal proof-of-concept
 - Demonstrate real impact, not theoretical risk

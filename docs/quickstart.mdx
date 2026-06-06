@@ -1,14 +1,14 @@
 ---
-title: "Quick Start"
-description: "Install Strix and run your first security scan"
+title: "快速开始"
+description: "安装 Strix and run your first security scan"
 ---
 
-## Prerequisites
+## 先决条件
 
 - Docker (running)
 - An LLM API key from any [supported provider](/llm-providers/overview) (OpenAI, Anthropic, Google, etc.)
 
-## Installation
+## 安装
 
 <Tabs>
   <Tab title="curl">
@@ -23,13 +23,13 @@ description: "Install Strix and run your first security scan"
   </Tab>
 </Tabs>
 
-## Configuration
+## 配置
 
 Set your LLM provider:
 
 ```bash
-export STRIX_LLM="openai/gpt-5.4"
-export LLM_API_KEY="your-api-key"
+export STRIX_LLM="deepseek-v4-pro"
+export DEEPSEEK_API_KEY="your-api-key"
 ```
 
 <Tip>
@@ -46,7 +46,7 @@ strix --target ./your-app
 First run pulls the Docker sandbox image automatically. Results are saved to `strix_runs/<run-name>`.
 </Note>
 
-## Target Types
+## Target 类型
 
 Strix accepts multiple target types:
 
@@ -64,13 +64,13 @@ strix --target https://your-app.com
 strix -t https://github.com/org/repo -t https://your-app.com
 ```
 
-## Next Steps
+## 下一步
 
 <CardGroup cols={2}>
-  <Card title="CLI Options" icon="terminal" href="/usage/cli">
+  <Card title="CLI 选项" icon="terminal" href="/usage/cli">
     Explore all command-line options.
   </Card>
-  <Card title="Scan Modes" icon="gauge" href="/usage/scan-modes">
+  <Card title="扫描模式" icon="gauge" href="/usage/scan-modes">
     Choose the right scan depth.
   </Card>
 </CardGroup>

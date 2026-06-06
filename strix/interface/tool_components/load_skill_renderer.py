@@ -21,13 +21,13 @@ class LoadSkillRenderer(BaseToolRenderer):
 
         text = Text()
         text.append("◇ ", style="#10b981")
-        text.append("loading skill", style="dim")
+        text.append("正在加载技能", style="dim")
 
         if requested:
             text.append(" ")
             text.append(requested, style="#10b981")
         elif not tool_data.get("result"):
             text.append("\n  ")
-            text.append("Loading...", style="dim")
+            text.append("加载中...", style="dim")
 
         return Static(text, classes=cls.get_css_classes(status))

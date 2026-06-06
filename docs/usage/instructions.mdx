@@ -1,73 +1,73 @@
 ---
-title: "Custom Instructions"
-description: "Guide Strix with custom testing instructions"
+title: "自定义指令"
+description: "用自定义测试指令引导 Strix"
 ---
 
-Use instructions to provide context, credentials, or focus areas for your scan.
+使用指令为扫描提供上下文、凭据或关注重点。
 
-## Inline Instructions
+## 行内指令
 
 ```bash
-strix --target https://app.com --instruction "Focus on authentication vulnerabilities"
+strix --target https://app.com --instruction "聚焦认证漏洞"
 ```
 
-## File-Based Instructions
+## 基于文件的指令
 
-For complex instructions, use a file:
+对于复杂指令，使用文件更合适：
 
 ```bash
 strix --target https://app.com --instruction-file ./pentest-instructions.md
 ```
 
-## Common Use Cases
+## 常见场景
 
-### Authenticated Testing
-
-```bash
-strix --target https://app.com \
-  --instruction "Login with email: test@example.com, password: TestPass123"
-```
-
-### Focused Scope
-
-```bash
-strix --target https://api.example.com \
-  --instruction "Focus on IDOR vulnerabilities in the /api/users endpoints"
-```
-
-### Exclusions
+### 认证测试
 
 ```bash
 strix --target https://app.com \
-  --instruction "Do not test /admin or /internal endpoints"
+  --instruction "使用邮箱 test@example.com 和密码 TestPass123 登录"
 ```
 
-### API Testing
+### 聚焦范围
 
 ```bash
 strix --target https://api.example.com \
-  --instruction "Use API key header: X-API-Key: abc123. Focus on rate limiting bypass."
+  --instruction "聚焦 /api/users 端点中的 IDOR 漏洞"
 ```
 
-## Instruction File Example
+### 排除项
+
+```bash
+strix --target https://app.com \
+  --instruction "不要测试 /admin 或 /internal 端点"
+```
+
+### API 测试
+
+```bash
+strix --target https://api.example.com \
+  --instruction "使用 API key 请求头：X-API-Key: abc123。重点关注限流绕过。"
+```
+
+## 指令文件示例
 
 ```markdown instructions.md
-# Penetration Test Instructions
+# 渗透测试说明
 
-## Credentials
-- Admin: admin@example.com / AdminPass123
-- User: user@example.com / UserPass123
+## 凭据
+- 管理员：admin@example.com / AdminPass123
+- 用户：user@example.com / UserPass123
 
-## Focus Areas
-1. IDOR in user profile endpoints
-2. Privilege escalation between roles
-3. JWT token manipulation
+## 关注重点
+1. 用户资料端点中的 IDOR
+2. 不同角色之间的权限提升
+3. JWT 令牌篡改
 
-## Out of Scope
-- /health endpoints
-- Third-party integrations
+## 不在范围内
+- /health 端点
+- 第三方集成
 ```
 
 <Tip>
-Be specific. Good instructions help Strix prioritize the most valuable attack paths.
+请尽量具体。好的指令能帮助 Strix 优先处理最有价值的攻击路径。
 </Tip>

@@ -154,7 +154,7 @@ class Tracer:
         try:
             Traceloop.set_association_properties(sanitized)
         except Exception:  # noqa: BLE001
-            logger.debug("Failed to set Traceloop association properties")
+            logger.debug("设置 Traceloop 关联属性失败")
 
     def _sanitize_data(self, data: Any, key_hint: str | None = None) -> Any:
         return self._sanitizer.sanitize(data, key_hint=key_hint)
@@ -163,7 +163,7 @@ class Tracer:
         try:
             append_jsonl_record(self.events_file_path, record)
         except OSError:
-            logger.exception("Failed to append JSONL event record")
+            logger.exception("追加 JSONL 事件记录失败")
 
     def _enrich_actor(self, actor: dict[str, Any] | None) -> dict[str, Any] | None:
         if not actor:
@@ -243,7 +243,7 @@ class Tracer:
                             json.dumps(sanitized_error, ensure_ascii=False),
                         )
             except Exception:  # noqa: BLE001
-                logger.debug("Failed to create OTEL span for event type '%s'", event_type)
+                logger.debug("为事件类型 '%s' 创建 OTEL span 失败", event_type)
 
         if trace_id is None:
             trace_id = format_trace_id(uuid4().int & ((1 << 128) - 1)) or uuid4().hex
@@ -363,7 +363,7 @@ class Tracer:
             report["code_locations"] = code_locations
 
         self.vulnerability_reports.append(report)
-        logger.info(f"Added vulnerability report: {report_id} - {title}")
+        logger.info(f"已添加漏洞报告：{report_id} - {title}")
         posthog.finding(severity)
         self._emit_event(
             "finding.created",
@@ -397,24 +397,24 @@ class Tracer:
             "success": True,
         }
 
-        self.final_scan_result = f"""# Executive Summary
+        self.final_scan_result = f"""# 执行摘要
 
 {executive_summary.strip()}
 
-# Methodology
+# 方法论
 
 {methodology.strip()}
 
-# Technical Analysis
+# 技术分析
 
 {technical_analysis.strip()}
 
-# Recommendations
+# 建议
 
 {recommendations.strip()}
 """
 
-        logger.info("Updated scan final fields")
+        logger.info("已更新扫描最终字段")
         self._emit_event(
             "finding.reviewed",
             payload={
@@ -623,13 +623,13 @@ class Tracer:
             if self.final_scan_result:
                 penetration_test_report_file = run_dir / "penetration_test_report.md"
                 with penetration_test_report_file.open("w", encoding="utf-8") as f:
-                    f.write("# Security Penetration Test Report\n\n")
+                    f.write("# 安全渗透测试报告\n\n")
                     f.write(
-                        f"**Generated:** {datetime.now(UTC).strftime('%Y-%m-%d %H:%M:%S UTC')}\n\n"
+                        f"**生成时间：** {datetime.now(UTC).strftime('%Y-%m-%d %H:%M:%S UTC')}\n\n"
                     )
                     f.write(f"{self.final_scan_result}\n")
                 logger.info(
-                    "Saved final penetration test report to: %s",
+                    "最终渗透测试报告已保存到：%s",
                     penetration_test_report_file,
                 )
 
@@ -655,15 +655,15 @@ class Tracer:
                 for report in new_reports:
                     vuln_file = vuln_dir / f"{report['id']}.md"
                     with vuln_file.open("w", encoding="utf-8") as f:
-                        f.write(f"# {report.get('title', 'Untitled Vulnerability')}\n\n")
-                        f.write(f"**ID:** {report.get('id', 'unknown')}\n")
-                        f.write(f"**Severity:** {report.get('severity', 'unknown').upper()}\n")
-                        f.write(f"**Found:** {report.get('timestamp', 'unknown')}\n")
+                        f.write(f"# {report.get('title', '未命名漏洞')}\n\n")
+                        f.write(f"**编号：** {report.get('id', 'unknown')}\n")
+                        f.write(f"**严重性：** {report.get('severity', 'unknown').upper()}\n")
+                        f.write(f"**发现时间：** {report.get('timestamp', 'unknown')}\n")
 
                         metadata_fields: list[tuple[str, Any]] = [
-                            ("Target", report.get("target")),
-                            ("Endpoint", report.get("endpoint")),
-                            ("Method", report.get("method")),
+                            ("目标", report.get("target")),
+                            ("端点", report.get("endpoint")),
+                            ("方法", report.get("method")),
                             ("CVE", report.get("cve")),
                             ("CWE", report.get("cwe")),
                         ]
@@ -675,20 +675,20 @@ class Tracer:
                             if value:
                                 f.write(f"**{label}:** {value}\n")
 
-                        f.write("\n## Description\n\n")
-                        description = report.get("description") or "No description provided."
+                        f.write("\n## 描述\n\n")
+                        description = report.get("description") or "未提供描述。"
                         f.write(f"{description}\n\n")
 
                         if report.get("impact"):
-                            f.write("## Impact\n\n")
+                            f.write("## 影响\n\n")
                             f.write(f"{report['impact']}\n\n")
 
                         if report.get("technical_analysis"):
-                            f.write("## Technical Analysis\n\n")
+                            f.write("## 技术分析\n\n")
                             f.write(f"{report['technical_analysis']}\n\n")
 
                         if report.get("poc_description") or report.get("poc_script_code"):
-                            f.write("## Proof of Concept\n\n")
+                            f.write("## 概念验证\n\n")
                             if report.get("poc_description"):
                                 f.write(f"{report['poc_description']}\n\n")
                             if report.get("poc_script_code"):
@@ -697,23 +697,23 @@ class Tracer:
                                 f.write("```\n\n")
 
                         if report.get("code_locations"):
-                            f.write("## Code Analysis\n\n")
+                            f.write("## 代码分析\n\n")
                             for i, loc in enumerate(report["code_locations"]):
-                                prefix = f"**Location {i + 1}:**"
+                                prefix = f"**位置 {i + 1}:**"
                                 file_ref = loc.get("file", "unknown")
                                 line_ref = ""
                                 if loc.get("start_line") is not None:
                                     if loc.get("end_line") and loc["end_line"] != loc["start_line"]:
-                                        line_ref = f" (lines {loc['start_line']}-{loc['end_line']})"
+                                        line_ref = f"（第 {loc['start_line']}-{loc['end_line']} 行）"
                                     else:
-                                        line_ref = f" (line {loc['start_line']})"
+                                        line_ref = f"（第 {loc['start_line']} 行）"
                                 f.write(f"{prefix} `{file_ref}`{line_ref}\n")
                                 if loc.get("label"):
                                     f.write(f"  {loc['label']}\n")
                                 if loc.get("snippet"):
                                     f.write(f"  ```\n  {loc['snippet']}\n  ```\n")
                                 if loc.get("fix_before") or loc.get("fix_after"):
-                                    f.write("\n  **Suggested Fix:**\n")
+                                    f.write("\n  **建议修复：**\n")
                                     f.write("```diff\n")
                                     if loc.get("fix_before"):
                                         for line in loc["fix_before"].splitlines():
@@ -725,7 +725,7 @@ class Tracer:
                                 f.write("\n")
 
                         if report.get("remediation_steps"):
-                            f.write("## Remediation\n\n")
+                            f.write("## 修复建议\n\n")
                             f.write(f"{report['remediation_steps']}\n\n")
 
                     self._saved_vuln_ids.add(report["id"])
@@ -751,13 +751,13 @@ class Tracer:
 
                 if new_reports:
                     logger.info(
-                        "Saved %d new vulnerability report(s) to: %s",
+                        "已保存 %d 个新的漏洞报告到：%s",
                         len(new_reports),
                         vuln_dir,
                     )
-                logger.info("Updated vulnerability index: %s", vuln_csv_file)
+                logger.info("已更新漏洞索引：%s", vuln_csv_file)
 
-            logger.info("📊 Essential scan data saved to: %s", run_dir)
+            logger.info("📊 关键扫描数据已保存到：%s", run_dir)
             if mark_complete and not self._run_completed_emitted:
                 self._emit_event(
                     "run.completed",
@@ -772,7 +772,7 @@ class Tracer:
                 self._run_completed_emitted = True
 
         except (OSError, RuntimeError):
-            logger.exception("Failed to save scan data")
+            logger.exception("保存扫描数据失败")
 
     def _calculate_duration(self) -> float:
         try:

@@ -1,73 +1,73 @@
 ---
-title: "CLI Reference"
-description: "Command-line options for Strix"
+title: "CLI 参考"
+description: "Strix 的命令行选项"
 ---
 
-## Basic Usage
+## 基本用法
 
 ```bash
 strix --target <target> [options]
 ```
 
-## Options
+## 选项
 
 <ParamField path="--target, -t" type="string" required>
-  Target to test. Accepts URLs, repositories, local directories, domains, or IP addresses. Can be specified multiple times.
+  要测试的目标。可接受 URL、仓库、本地目录、域名或 IP 地址。可重复指定。
 </ParamField>
 
 <ParamField path="--instruction" type="string">
-  Custom instructions for the scan. Use for credentials, focus areas, or specific testing approaches.
+  扫描的自定义指令。可用于凭据、关注区域或特定测试方法。
 </ParamField>
 
 <ParamField path="--instruction-file" type="string">
-  Path to a file containing detailed instructions.
+  包含详细指令的文件路径。
 </ParamField>
 
 <ParamField path="--scan-mode, -m" type="string" default="deep">
-  Scan depth: `quick`, `standard`, or `deep`.
+  扫描深度：`quick`、`standard` 或 `deep`。
 </ParamField>
 
 <ParamField path="--scope-mode" type="string" default="auto">
-  Code scope mode: `auto` (enable PR diff-scope in CI/headless runs), `diff` (force changed-files scope), or `full` (disable diff-scope).
+  代码范围模式：`auto`（在 CI/无头运行中启用 PR diff-scope）、`diff`（强制使用变更文件范围）或 `full`（关闭 diff-scope）。
 </ParamField>
 
 <ParamField path="--diff-base" type="string">
-  Target branch or commit to compare against (e.g., `origin/main`). Defaults to the repository's default branch.
+  用于比较的目标分支或提交（例如 `origin/main`）。默认使用仓库的默认分支。
 </ParamField>
 
 <ParamField path="--non-interactive, -n" type="boolean">
-  Run in headless mode without TUI. Ideal for CI/CD.
+  以无头模式运行，不显示 TUI。非常适合 CI/CD。
 </ParamField>
 
 <ParamField path="--config" type="string">
-  Path to a custom config file (JSON) to use instead of `~/.strix/cli-config.json`.
+  自定义配置文件（JSON）路径，用于替代 `~/.strix/cli-config.json`。
 </ParamField>
 
-## Examples
+## 示例
 
 ```bash
-# Basic scan
+# 基础扫描
 strix --target https://example.com
 
-# Authenticated testing
+# 认证测试
 strix --target https://app.com --instruction "Use credentials: user:pass"
 
-# Focused testing
+# 聚焦测试
 strix --target api.example.com --instruction "Focus on IDOR and auth bypass"
 
-# CI/CD mode
+# CI/CD 模式
 strix -n --target ./ --scan-mode quick
 
-# Force diff-scope against a specific base ref
+# 针对特定基准引用强制使用 diff-scope
 strix -n --target ./ --scan-mode quick --scope-mode diff --diff-base origin/main
 
-# Multi-target white-box testing
+# 多目标白盒测试
 strix -t https://github.com/org/app -t https://staging.example.com
 ```
 
-## Exit Codes
+## 退出码
 
-| Code | Meaning |
+| 代码 | 含义 |
 |------|---------|
-| 0 | Scan completed, no vulnerabilities found |
-| 2 | Vulnerabilities found (headless mode only) |
+| 0 | 扫描完成，未发现漏洞 |
+| 2 | 发现漏洞 (headless mode only) |

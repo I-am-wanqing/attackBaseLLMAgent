@@ -1,25 +1,25 @@
 ---
 name: firebase-firestore
-description: Firebase/Firestore security testing covering security rules, Cloud Functions, and client-side trust issues
+description: 面向 Firebase Firestore 的安全测试技能
 ---
 
-# Firebase / Firestore
+# Firebase Firestore
 
-Security testing for Firebase applications. Focus on Firestore/Realtime Database rules, Cloud Storage exposure, callable/onRequest Functions trusting client input, and incorrect ID token validation.
+Security testing for Firebase applications. Focus on Firestore/Realtime Database rules, 云端 Storage exposure, callable/onRequest Functions trusting client input, and incorrect ID token validation.
 
-## Attack Surface
+## 攻击面
 
 **Data Stores**
 - Firestore (documents/collections, rules, REST/SDK)
 - Realtime Database (JSON tree, rules)
-- Cloud Storage (rules, signed URLs)
+- 云端 Storage (rules, signed URLs)
 
 **Authentication**
 - Auth ID tokens, custom claims, anonymous/sign-in providers
 - App Check attestation (and its limits)
 
 **Server-Side**
-- Cloud Functions (onCall/onRequest, triggers)
+- 云端 Functions (onCall/onRequest, triggers)
 - Admin SDK (bypasses rules)
 
 **Infrastructure**
@@ -42,8 +42,8 @@ Security testing for Firebase applications. Focus on Firestore/Realtime Database
 
 - Firestore collections with sensitive data (users, orders, payments)
 - Realtime Database root and high-level nodes
-- Cloud Storage buckets with private files
-- Cloud Functions (especially triggers that grant roles or issue signed URLs)
+- 云端 Storage buckets with private files
+- 云端 Functions (especially triggers that grant roles or issue signed URLs)
 - Admin/staff routes and privilege-granting endpoints
 - Export/report functions that generate signed outputs
 
@@ -65,7 +65,7 @@ firebase.apps[0].options
 
 Capture ID tokens for each.
 
-## Key Vulnerabilities
+## 关键漏洞
 
 ### Firestore Rules
 
@@ -111,7 +111,7 @@ exists(/databases/(default)/documents/orgs/$(org)/members/$(request.auth.uid))
 - Avoid `.read/.write: true` or `auth != null` at high-level nodes
 - Attempt to write privilege-bearing nodes (roles, org membership)
 
-### Cloud Storage
+### 云端 Storage
 
 **Common Issues**
 - Public reads on sensitive buckets/paths
@@ -121,9 +121,9 @@ exists(/databases/(default)/documents/orgs/$(org)/members/$(request.auth.uid))
 **Tests**
 - GET gs:// paths via HTTPS without auth; verify Content-Type and `Content-Disposition: attachment`
 - Generate and reuse signed URLs across accounts and paths; try case/URL-encoding variants
-- Upload HTML/SVG and verify `X-Content-Type-Options: nosniff`; check for script execution
+- Upload HTML/SVG and verify `X-Content-Type-选项: nosniff`; check for script execution
 
-### Cloud Functions
+### 云端 Functions
 
 `onCall` provides `context.auth` automatically; `onRequest` must verify ID tokens explicitly. Admin SDK bypasses rules—all ownership/tenant checks must be in code.
 
@@ -187,7 +187,7 @@ Apps often implement multi-tenant data models (`orgs/<orgId>/...`). Bind tenant 
 - Storage: length/timing differences on signed URL attempts leak validity
 - Functions: constant-time comparisons vs variable messages reveal authorization branches
 
-## Testing Methodology
+## 测试方法
 
 1. **Extract config** - Get project config from client bundle
 2. **Obtain principals** - Collect tokens for unauth, anonymous, user A/B, admin
@@ -203,9 +203,9 @@ Apps often implement multi-tenant data models (`orgs/<orgId>/...`). Bind tenant 
 - Functions: fuzz onRequest with varied content-types and missing/forged Authorization
 - Storage: enumerate prefixes; test signed URL generation and reuse patterns
 
-## Validation Requirements
+## 验证 Requirements
 
 - Owner vs non-owner Firestore queries showing unauthorized access or metadata leak
-- Cloud Storage read/write beyond intended scope (public object, signed URL reuse, list exposure)
+- 云端 Storage read/write beyond intended scope (public object, signed URL reuse, list exposure)
 - Function accepting forged/foreign identity (wrong `aud`/`iss`) or trusting client `uid`/`orgId`
 - Minimal reproducible requests with roles/tokens used and observed deltas

@@ -6,16 +6,23 @@ from typing import Any, ClassVar
 
 
 STRIX_API_BASE = "https://models.strix.ai/api/v1"
+QWEN_API_BASE = "https://dashscope.aliyuncs.com/compatible-mode/v1"
+QWEN_DEFAULT_MODEL = "qwen3.7-max"
+DEEPSEEK_API_BASE = "https://api.deepseek.com"
+DEEPSEEK_DEFAULT_MODEL = "deepseek-v4-pro"
 
 
 class Config:
     """Configuration Manager for Strix."""
 
     # LLM Configuration
-    strix_llm = None
+    strix_llm = QWEN_DEFAULT_MODEL
     llm_api_key = None
+    dashscope_api_key = None
+    deepseek_api_key = None
     llm_api_base = None
-    openai_api_base = None
+    dashscope_api_base = QWEN_API_BASE
+    deepseek_api_base = DEEPSEEK_API_BASE
     litellm_base_url = None
     ollama_api_base = None
     strix_reasoning_effort = "high"
@@ -25,8 +32,11 @@ class Config:
     _LLM_CANONICAL_NAMES = (
         "strix_llm",
         "llm_api_key",
+        "dashscope_api_key",
+        "deepseek_api_key",
         "llm_api_base",
-        "openai_api_base",
+        "dashscope_api_base",
+        "deepseek_api_base",
         "litellm_base_url",
         "ollama_api_base",
         "strix_reasoning_effort",
@@ -197,7 +207,7 @@ def save_current_config() -> bool:
 
 
 def resolve_llm_config() -> tuple[str | None, str | None, str | None]:
-    """Resolve LLM model, api_key, and api_base based on STRIX_LLM prefix.
+    """Resolve LLM model, api_key, and api_base based on STRIX_LLM.
 
     Returns:
         tuple: (model_name, api_key, api_base)
@@ -209,16 +219,36 @@ def resolve_llm_config() -> tuple[str | None, str | None, str | None]:
     if not model:
         return None, None, None
 
-    api_key = Config.get("llm_api_key")
+    if _is_qwen_model(model):
+        api_key = Config.get("dashscope_api_key") or Config.get("llm_api_key")
+        api_base = Config.get("dashscope_api_base") or QWEN_API_BASE
+    elif _is_deepseek_model(model):
+        api_key = Config.get("deepseek_api_key") or Config.get("llm_api_key")
+        api_base = Config.get("deepseek_api_base") or DEEPSEEK_API_BASE
+    else:
+        api_key = Config.get("llm_api_key")
 
     if model.startswith("strix/"):
         api_base: str | None = STRIX_API_BASE
-    else:
+    elif not (_is_qwen_model(model) or _is_deepseek_model(model)):
         api_base = (
             Config.get("llm_api_base")
-            or Config.get("openai_api_base")
             or Config.get("litellm_base_url")
             or Config.get("ollama_api_base")
         )
 
     return model, api_key, api_base
+
+
+def _is_qwen_model(model: str | None) -> bool:
+    if not model:
+        return False
+    normalized = model.lower()
+    return normalized.startswith(("qwen/", "qwen-", "qwen"))
+
+
+def _is_deepseek_model(model: str | None) -> bool:
+    if not model:
+        return False
+    normalized = model.lower()
+    return normalized.startswith(("deepseek/", "deepseek-"))

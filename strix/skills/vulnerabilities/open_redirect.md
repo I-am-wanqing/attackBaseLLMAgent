@@ -1,13 +1,13 @@
 ---
 name: open-redirect
-description: Open redirect testing for phishing pivots, OAuth token theft, and allowlist bypass
+description: 开放重定向安全测试技能
 ---
 
-# Open Redirect
+# 开放重定向
 
 Open redirects enable phishing, OAuth/OIDC code and token theft, and allowlist bypass in server-side fetchers that follow redirects. Treat every redirect target as untrusted: canonicalize and enforce exact allowlists per scheme, host, and path.
 
-## Attack Surface
+## 攻击面
 
 **Server-Driven Redirects**
 - HTTP 3xx Location
@@ -30,7 +30,7 @@ Open redirects enable phishing, OAuth/OIDC code and token theft, and allowlist b
 
 ## Reconnaissance
 
-### Injection Points
+### 注入点
 
 - Params: `redirect`, `url`, `next`, `return_to`, `returnUrl`, `continue`, `goto`, `target`, `callback`, `out`, `dest`, `back`, `to`, `r`, `u`
 - OAuth/OIDC/SAML: `redirect_uri`, `post_logout_redirect_uri`, `RelayState`, `state`
@@ -62,7 +62,7 @@ Open redirects enable phishing, OAuth/OIDC code and token theft, and allowlist b
 - IP variants: decimal 2130706433, octal 0177.0.0.1, hex 0x7f.1, IPv6 `[::ffff:127.0.0.1]`
 - User-controlled path bases: `/out?url=/\evil.com`
 
-## Key Vulnerabilities
+## 关键漏洞
 
 ### Allowlist Evasion
 
@@ -72,7 +72,7 @@ Open redirects enable phishing, OAuth/OIDC code and token theft, and allowlist b
 - Missing scheme pinning: `data:`, `javascript:`, `file:`, `gopher:` accepted
 - Case/IDN drift between validator and browser
 
-**Robust Validation**
+**Robust 验证**
 - Canonicalize with a single modern URL parser (WHATWG URL)
 - Compare exact scheme, hostname (post-IDNA), and an explicit allowlist with optional exact path prefixes
 - Require absolute HTTPS; reject protocol-relative `//` and unknown schemes
@@ -121,7 +121,7 @@ Open redirects enable phishing, OAuth/OIDC code and token theft, and allowlist b
 1. Server-side link unfurler fetches `https://trusted.example/out?u=http://169.254.169.254/latest/meta-data`
 2. Redirect follows to metadata; confirm via timing/headers
 
-## Testing Methodology
+## 测试方法
 
 1. **Inventory surfaces** - Login/logout, password reset, SSO/OAuth flows, payment gateways, email links
 2. **Build test matrix** - Scheme × host × path variants and encoding/unicode forms
@@ -129,28 +129,28 @@ Open redirects enable phishing, OAuth/OIDC code and token theft, and allowlist b
 4. **Multi-hop testing** - Trusted-domain → redirector → external
 5. **Prove impact** - Credential phishing, OAuth code interception, internal egress
 
-## Validation
+## 验证
 
 1. Produce a minimal URL that navigates to an external domain via the vulnerable surface; include the full address bar capture
 2. Show bypass of the stated validation (regex/allowlist) using canonicalization variants
 3. Test multi-hop: prove only first hop is validated and second hop escapes constraints
 4. For OAuth/SAML, demonstrate code/RelayState delivery to an attacker-controlled endpoint
 
-## False Positives
+## 误报
 
 - Redirects constrained to relative same-origin paths with robust normalization
 - Exact pre-registered OAuth redirect_uri with strict verifier
 - Validators using a single canonical parser and comparing post-IDNA host and scheme
 - User prompts that show the exact final destination before navigating
 
-## Impact
+## 影响
 
 - Credential and token theft via phishing and OAuth/OIDC interception
 - Internal data exposure when server fetchers follow redirects
 - Policy bypass where allowlists are enforced only on the first hop
 - Cross-application trust erosion and brand abuse
 
-## Pro Tips
+## 实战技巧
 
 1. Always compare server-side canonicalization to real browser navigation; differences reveal bypasses
 2. Try userinfo, protocol-relative, Unicode/IDN, and IP numeric variants early
@@ -160,6 +160,6 @@ Open redirects enable phishing, OAuth/OIDC code and token theft, and allowlist b
 6. Favor allowlists of exact origins plus optional path prefixes
 7. Keep a curated suite of redirect payloads per runtime (Java, Node, Python, Go)
 
-## Summary
+## 总结
 
 Redirection is safe only when the final destination is constrained after canonicalization. Enforce exact origins, verify per hop, and treat client-provided destinations as untrusted across every stack.

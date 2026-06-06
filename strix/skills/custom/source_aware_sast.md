@@ -1,9 +1,9 @@
 ---
 name: source-aware-sast
-description: Practical source-aware SAST and AST playbook for semgrep, ast-grep, gitleaks, and trivy fs
+description: 面向白盒场景的源码感知静态分析策略
 ---
 
-# Source-Aware SAST Playbook
+# 源码感知 SAST
 
 Use this skill for source-heavy analysis where static and structural signals should guide dynamic testing.
 

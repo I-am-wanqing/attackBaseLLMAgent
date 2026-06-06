@@ -1,11 +1,11 @@
 ---
 title: "GitHub Actions"
-description: "Run Strix security scans on every pull request"
+description: "在每个 Pull Request 上运行 Strix 安全扫描"
 ---
 
-Integrate Strix into your GitHub workflow to catch vulnerabilities before they reach production.
+将 Strix 集成到你的 GitHub 工作流中，在漏洞到达生产环境前将其捕获。
 
-## Basic Workflow
+## 基础工作流
 
 ```yaml .github/workflows/security.yml
 name: Security Scan
@@ -31,36 +31,36 @@ jobs:
         run: strix -n -t ./ --scan-mode quick
 ```
 
-## Required Secrets
+## 必需密钥
 
-Add these secrets to your repository:
+将这些密钥添加到你的仓库中：
 
-| Secret | Description |
+| 密钥 | 说明 |
 |--------|-------------|
-| `STRIX_LLM` | Model name (e.g., `openai/gpt-5.4`) |
-| `LLM_API_KEY` | API key for your LLM provider |
+| `STRIX_LLM` | 模型名称（例如 `openai/gpt-5.4`） |
+| `LLM_API_KEY` | LLM 提供方的 API 密钥 |
 
-## Exit Codes
+## 退出码
 
-The workflow fails when vulnerabilities are found:
+当发现漏洞时，工作流会失败：
 
-| Code | Result |
+| 代码 | 结果 |
 |------|--------|
-| 0 | Pass — No vulnerabilities |
-| 2 | Fail — Vulnerabilities found |
+| 0 | 通过 - 无漏洞 |
+| 2 | 失败 - 发现漏洞 |
 
-## Scan Modes for CI
+## CI 扫描模式
 
-| Mode | Duration | Use Case |
+| 模式 | 耗时 | 使用场景 |
 |------|----------|----------|
-| `quick` | Minutes | Every PR |
-| `standard` | ~30 min | Nightly builds |
-| `deep` | 1-4 hours | Release candidates |
+| `quick` | 几分钟 | 每个 PR |
+| `standard` | 约 30 分钟 | 每晚构建 |
+| `deep` | 1-4 小时 | 发布候选版本 |
 
 <Tip>
-Use `quick` mode for PRs to keep feedback fast. Schedule `deep` scans nightly.
+PR 建议使用 `quick` 模式以保持反馈速度；将 `deep` 扫描安排为每晚运行。
 </Tip>
 
 <Note>
-For pull_request workflows, Strix automatically uses changed-files diff-scope in CI/headless runs. If diff resolution fails, ensure full history is fetched (`fetch-depth: 0`) or set `--diff-base`.
+对于 `pull_request` 工作流，Strix 会在 CI/无头运行中自动使用变更文件的 diff-scope。如果 diff 解析失败，请确保拉取完整历史（`fetch-depth: 0`），或者显式设置 `--diff-base`。
 </Note>

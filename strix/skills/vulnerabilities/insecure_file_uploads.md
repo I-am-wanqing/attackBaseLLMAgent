@@ -1,13 +1,13 @@
 ---
 name: insecure-file-uploads
-description: File upload security testing covering extension bypass, content-type manipulation, and path traversal
+description: 不安全文件上传安全测试技能
 ---
 
-# Insecure File Uploads
+# 不安全文件上传
 
-Upload surfaces are high risk: server-side execution (RCE), stored XSS, malware distribution, storage takeover, and DoS. Modern stacks mix direct-to-cloud uploads, background processors, and CDNs—authorization and validation must hold across every step.
+Upload surfaces are high risk: server-side execution (RCE), stored XSS, malware distribution, storage takeover, and DoS. 模式rn stacks mix direct-to-cloud uploads, background processors, and CDNs—authorization and validation must hold across every step.
 
-## Attack Surface
+## 攻击面
 
 - Web/mobile/API uploads, direct-to-cloud (S3/GCS/Azure) presigned flows, resumable/multipart protocols (tus, S3 MPU)
 - Image/document/media pipelines (ImageMagick/GraphicsMagick, Ghostscript, ExifTool, PDF engines, office converters)
@@ -25,7 +25,7 @@ Upload surfaces are high risk: server-side execution (RCE), stored XSS, malware 
 
 ### Capability Probes
 
-- Small probe files of each claimed type; diff resulting Content-Type, Content-Disposition, and X-Content-Type-Options on download
+- Small probe files of each claimed type; diff resulting Content-Type, Content-Disposition, and X-Content-Type-选项 on download
 - Magic bytes vs extension: JPEG/GIF/PNG headers; mismatches reveal reliance on extension or MIME sniffing
 - SVG/HTML probe: do they render inline (text/html or image/svg+xml) or download (attachment)?
 - Archive probe: simple zip with nested path traversal entries and symlinks to detect extraction rules
@@ -43,7 +43,7 @@ Upload surfaces are high risk: server-side execution (RCE), stored XSS, malware 
 
 ### Header and Render
 
-- Missing X-Content-Type-Options: nosniff enabling browser sniff to script
+- Missing X-Content-Type-选项: nosniff enabling browser sniff to script
 - Content-Type reflection from upload vs server-set; Content-Disposition: inline vs attachment
 
 ### Process Side Effects
@@ -79,7 +79,7 @@ Upload surfaces are high risk: server-side execution (RCE), stored XSS, malware 
 - Ghostscript in PDF/PS with file operators (%pipe%)
 - ExifTool metadata parsing bugs; overly large or crafted EXIF/IPTC/XMP fields
 
-### Cloud Storage Vectors
+### 云端 Storage Vectors
 
 - S3/GCS presigned uploads: attacker controls Content-Type/Disposition; set text/html or image/svg+xml and inline rendering
 - Public-read ACL or permissive bucket policies expose uploads broadly
@@ -115,7 +115,7 @@ Upload surfaces are high risk: server-side execution (RCE), stored XSS, malware 
 
 ## Bypass Techniques
 
-### Validation Gaps
+### 验证 Gaps
 
 - Client-side only checks; relying on JS/MIME provided by browser
 - Trusting multipart boundary part headers blindly
@@ -126,7 +126,7 @@ Upload surfaces are high risk: server-side execution (RCE), stored XSS, malware 
 - Double extensions, mixed case, hidden dotfiles, extra dots (file..png), long paths with allowed suffix
 - Multipart name vs filename vs path discrepancies; duplicate parameters and late parameter precedence
 
-## Special Contexts
+## 特殊场景
 
 ### Rich Text Editors
 
@@ -141,7 +141,7 @@ Upload surfaces are high risk: server-side execution (RCE), stored XSS, malware 
 - Direct-to-bucket uploads with Lambda/Workers post-processing; verify security decisions are not delegated to frontends
 - CDN caching of uploaded content; ensure correct cache keys and headers
 
-## Testing Methodology
+## 测试方法
 
 1. **Map the pipeline** - Client → ingress → storage → processors → serving. Note where validation and auth occur
 2. **Identify allowed types** - Size limits, filename rules, storage keys, and who serves the content
@@ -149,7 +149,7 @@ Upload surfaces are high risk: server-side execution (RCE), stored XSS, malware 
 4. **Exercise bypass families** - Extension games, MIME/content-type, magic bytes, polyglots, metadata payloads, archive structure
 5. **Validate execution** - Can uploaded content execute on server or client?
 
-## Validation
+## 验证
 
 1. Demonstrate execution or rendering of active content: web shell reachable, or SVG/HTML executing JS when viewed
 2. Show filter bypass: upload accepted despite restrictions with evidence on retrieval
@@ -157,20 +157,20 @@ Upload surfaces are high risk: server-side execution (RCE), stored XSS, malware 
 4. Show race or pipeline gap: access before AV/CDR; extraction outside intended directory
 5. Provide reproducible steps: request/response for upload and subsequent access
 
-## False Positives
+## 误报
 
 - Upload stored but never served back; or always served as attachment with strict nosniff
 - Converters run in locked-down sandboxes with no external IO and no script engines
 - AV/CDR blocks the payload and quarantines; access before scan is impossible by design
 
-## Impact
+## 影响
 
 - Remote code execution on application stack or media toolchain host
 - Persistent cross-site scripting and session/token exfiltration via served uploads
 - Malware distribution via public storage/CDN; brand/reputation damage
 - Data loss or corruption via overwrite/zip slip; service degradation via zip bombs
 
-## Pro Tips
+## 实战技巧
 
 1. Keep PoCs minimal: tiny SVG/HTML for XSS, a single-line PHP/ASP where relevant
 2. Always capture download response headers and final MIME; that decides browser behavior
@@ -183,6 +183,6 @@ Upload surfaces are high risk: server-side execution (RCE), stored XSS, malware 
 9. Validate that CDNs honor attachment/nosniff
 10. Document full pipeline behavior per asset type
 
-## Summary
+## 总结
 
 Secure uploads are a pipeline property. Enforce strict type, size, and header controls; transform or strip active content; never execute or inline-render untrusted uploads; and keep storage private with controlled, signed access.

@@ -1,62 +1,62 @@
 ---
-title: "Scan Modes"
-description: "Choose the right scan depth for your use case"
+title: "扫描模式"
+description: "为你的场景选择合适的扫描深度"
 ---
 
-Strix offers three scan modes to balance speed and thoroughness.
+Strix 提供三种扫描模式，用于在速度与彻底性之间取得平衡。
 
-## Quick
+## 快速
 
 ```bash
 strix --target ./app --scan-mode quick
 ```
 
-Fast checks for obvious vulnerabilities. Best for:
-- CI/CD pipelines
-- Pull request validation
-- Rapid smoke tests
+针对明显漏洞的快速检查。适合：
+- CI/CD 流水线
+- Pull Request 验证
+- 快速冒烟测试
 
-**Duration**: Minutes
+**耗时**：几分钟
 
-## Standard
+## 标准
 
 ```bash
 strix --target ./app --scan-mode standard
 ```
 
-Balanced testing for routine security reviews. Best for:
-- Regular security assessments
-- Pre-release validation
-- Development milestones
+适合日常安全评审的平衡型测试。适合：
+- 常规安全评估
+- 发布前验证
+- 开发里程碑
 
-**Duration**: 30 minutes to 1 hour
+**耗时**：30 分钟到 1 小时
 
-**White-box behavior**: Uses source-aware mapping and static triage to prioritize dynamic exploit validation paths.
+**白盒行为**：使用源码感知映射和静态初筛，优先安排动态利用验证路径。
 
-## Deep
+## 深度
 
 ```bash
 strix --target ./app --scan-mode deep
 ```
 
-Thorough penetration testing. Best for:
-- Comprehensive security audits
-- Pre-production reviews
-- Critical application assessments
+彻底的渗透测试。适合：
+- 全面的安全审计
+- 生产前评审
+- 关键应用评估
 
-**Duration**: 1-4 hours depending on target complexity
+**耗时**：1 到 4 小时，视目标复杂度而定
 
-**White-box behavior**: Runs broad source-aware triage (`semgrep`, AST structural search, secrets, supply-chain checks) and then systematically validates top candidates dynamically.
+**白盒行为**：执行广泛的源码感知初筛（`semgrep`、AST 结构搜索、密钥扫描、供应链检查），随后系统性地对高优先级候选项进行动态验证。
 
 <Note>
-Deep mode is the default. It explores edge cases, chained vulnerabilities, and complex attack paths.
+深度模式是默认模式。它会探索边界情况、链式漏洞和复杂攻击路径。
 </Note>
 
-## Choosing a Mode
+## 选择模式
 
-| Scenario | Recommended Mode |
+| 场景 | 推荐模式 |
 |----------|------------------|
-| Every PR | Quick |
-| Weekly scans | Standard |
-| Before major release | Deep |
-| Bug bounty hunting | Deep |
+| 每个 PR | 快速 |
+| 每周扫描 | 标准 |
+| 重大版本发布前 | 深度 |
+| 漏洞赏金挖掘 | 深度 |

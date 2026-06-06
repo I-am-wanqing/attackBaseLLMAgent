@@ -1,34 +1,34 @@
 ---
 title: "Browser"
-description: "Playwright-powered Chrome for web application testing"
+description: "用于 Web 应用测试的 Playwright 驱动 Chrome"
 ---
 
-Strix uses a headless Chrome browser via Playwright to interact with web applications exactly like a real user would.
+Strix 通过 Playwright 使用无头 Chrome 浏览器，与 Web 应用的交互方式与真实用户完全一致。
 
-## How It Works
+## 工作方式
 
-All browser traffic is automatically routed through the Caido proxy, giving Strix full visibility into every request and response. This enables:
+所有浏览器流量都会自动经过 Caido 代理，让 Strix 能完整看到每个请求和响应。这使得它可以：
 
-- Testing client-side vulnerabilities (XSS, DOM manipulation)
-- Navigating authenticated flows (login, OAuth, MFA)
-- Triggering JavaScript-heavy functionality
-- Capturing dynamically generated requests
+- 测试客户端漏洞（XSS、DOM 操作）
+- 处理认证流程（登录、OAuth、MFA）
+- 触发大量依赖 JavaScript 的功能
+- 捕获动态生成的请求
 
-## Capabilities
+## 能力
 
-| Action     | Description                                 |
+| 动作 | 说明 |
 | ---------- | ------------------------------------------- |
-| Navigate   | Go to URLs, follow links, handle redirects  |
-| Click      | Interact with buttons, links, form elements |
-| Type       | Fill in forms, search boxes, input fields   |
-| Execute JS | Run custom JavaScript in the page context   |
-| Screenshot | Capture visual state for reports            |
-| Multi-tab  | Test across multiple browser tabs           |
+| Navigate   | 访问 URL、跟随链接、处理重定向 |
+| Click      | 与按钮、链接、表单元素交互 |
+| Type       | 填写表单、搜索框和输入字段 |
+| Execute JS | 在页面上下文中运行自定义 JavaScript |
+| Screenshot | 为报告捕获视觉状态 |
+| Multi-tab  | 跨多个浏览器标签页测试 |
 
-## Example Flow
+## 示例流程
 
-1. Agent launches browser and navigates to login page
-2. Fills in credentials and submits form
-3. Proxy captures the authentication request
-4. Agent navigates to protected areas
-5. Tests for IDOR by replaying requests with modified IDs
+1. 智能体启动浏览器并进入登录页
+2. 填写凭据并提交表单
+3. 代理捕获认证请求
+4. 智能体进入受保护区域
+5. 通过重放带有修改 ID 的请求测试 IDOR

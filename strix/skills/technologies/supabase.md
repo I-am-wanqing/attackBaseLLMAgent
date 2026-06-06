@@ -1,13 +1,13 @@
 ---
 name: supabase
-description: Supabase security testing covering Row Level Security, PostgREST, Edge Functions, and service key exposure
+description: 面向 Supabase 的安全测试技能
 ---
 
 # Supabase
 
 Security testing for Supabase applications. Focus on mis-scoped Row Level Security (RLS), unsafe RPCs, leaked `service_role` keys, lax Storage policies, and Edge Functions trusting headers without binding to issuer/audience/tenant.
 
-## Attack Surface
+## 攻击面
 
 **Data Access**
 - PostgREST: table CRUD, filters, embeddings, RPC (remote functions)
@@ -72,7 +72,7 @@ Security testing for Supabase applications. Focus on mis-scoped Row Level Securi
 - Admin/staff (if available)
 - Check if `service_role` key leaked in client bundle or Edge Function responses
 
-## Key Vulnerabilities
+## 关键漏洞
 
 ### Row Level Security (RLS)
 
@@ -159,7 +159,7 @@ GET /storage/v1/object/list/<bucket>?prefix=
 
 **Content-Type Abuse**
 - Upload HTML/SVG served as `text/html` or `image/svg+xml`
-- Verify `X-Content-Type-Options: nosniff` and `Content-Disposition: attachment`
+- Verify `X-Content-Type-选项: nosniff` and `Content-Disposition: attachment`
 
 **Path Confusion**
 - Mixed case, URL-encoding, `..` segments may be rejected at UI but accepted by API
@@ -242,7 +242,7 @@ Ensure every query joins or filters by `tenant_id`/`org_id` derived from JWT con
 - Conditional requests (`If-None-Match`) to detect object existence
 - Storage signed URLs: timing/length deltas to map valid vs invalid tokens
 
-## Testing Methodology
+## 测试方法
 
 1. **Inventory surfaces** - Map REST, Storage, GraphQL, Realtime, Auth, Functions endpoints
 2. **Obtain principals** - Collect tokens for anon, user A/B, admin; check for `service_role` leaks
@@ -260,7 +260,7 @@ Ensure every query joins or filters by `tenant_id`/`org_id` derived from JWT con
 - Auth/JWT: jwt-cli/jose to validate audience/issuer; replay against Edge Functions
 - Policy diffing: maintain request sets per role; compare results across releases
 
-## Validation Requirements
+## 验证 Requirements
 
 - Owner vs non-owner requests for REST/GraphQL showing unauthorized access (content or metadata)
 - Mis-scoped RPC or Storage signed URL usable by another user/tenant

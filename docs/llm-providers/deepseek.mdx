@@ -1,0 +1,30 @@
+---
+title: "DeepSeek"
+description: "将 DeepSeek 作为 Strix 的模型提供方"
+---
+
+Strix 默认使用 DeepSeek 的 OpenAI 兼容接口。
+
+```bash
+export STRIX_LLM="deepseek-v4-pro"
+export DEEPSEEK_API_KEY="your-deepseek-api-key"
+```
+
+默认 Base URL 为：
+
+```bash
+export DEEPSEEK_API_BASE="https://api.deepseek.com"
+```
+
+DeepSeek 请求默认启用推理：
+
+```python
+reasoning_effort="high"
+extra_body={"thinking": {"type": "enabled"}}
+```
+
+如有需要，你仍可通过 `STRIX_LLM` 覆盖模型：
+
+```bash
+export STRIX_LLM="deepseek/deepseek-v4-pro"
+```

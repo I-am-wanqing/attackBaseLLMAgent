@@ -1,75 +1,77 @@
 <tools>
   <tool name="create_vulnerability_report">
-    <description>Create a vulnerability report for a discovered security issue.
+    <description>为发现的安全问题创建漏洞报告。
 
-IMPORTANT: This tool includes automatic LLM-based deduplication. Reports that describe the same vulnerability (same root cause on the same asset) as an existing report will be rejected.
+重要：该工具包含基于 LLM 的自动去重。同一资产上、同一根因的重复漏洞报告会被拒绝。
 
-Use this tool to document a specific fully verified security vulnerability.
+语言要求：除代码标识符、函数名、变量名、文件路径、URL、命令、payload、CVE/CWE 编号以及代码块本身外，所有标题、描述、影响、技术分析、PoC 说明和修复建议都必须使用中文撰写；不要再输出英文叙述句。
 
-DO NOT USE:
-- For general security observations without specific vulnerabilities
-- When you don't have concrete vulnerability details
-- When you don't have a proof of concept, or still not 100% sure if it's a vulnerability
-- For tracking multiple vulnerabilities (create separate reports)
-- For reporting multiple vulnerabilities at once. Use a separate create_vulnerability_report for each vulnerability.
-- To re-report a vulnerability that was already reported (even with different details)
+请使用该工具记录一个已经完全验证的具体安全漏洞。
 
-White-box requirement (when you have access to the code): You MUST include code_locations with nested XML, including fix_before/fix_after on locations where a fix is proposed.
+不要使用该工具的场景：
+- 仅有一般安全观察，但没有明确漏洞
+- 没有具体的漏洞细节
+- 没有概念验证，或者仍然不能 100% 确认这是漏洞
+- 用于跟踪多个漏洞（请为每个漏洞分别创建报告）
+- 一次性报告多个漏洞。每个漏洞请单独调用一次 create_vulnerability_report。
+- 重复报告已经报告过的漏洞（即使细节不同）
 
-DEDUPLICATION: If this tool returns with success=false and mentions a duplicate, DO NOT attempt to re-submit. The vulnerability has already been reported. Move on to testing other areas.
+白盒要求（当你可以访问代码时）：必须包含嵌套 XML 形式的 code_locations，并且在提出修复的位置上包含 fix_before / fix_after。
 
-Professional, customer-facing report rules (PDF-ready):
-- Do NOT include internal or system details: never mention local or absolute paths (e.g., "/workspace"), internal tools, agents, orchestrators, sandboxes, models, system prompts/instructions, connection issues, internal errors/logs/stack traces, or tester machine environment details.
-- Tone and style: formal, objective, third-person, vendor-neutral, concise. No runbooks, checklists, or engineering notes. Avoid headings like "QUICK", "Approach", or "Techniques" that read like internal guidance.
-- Use a standard penetration testing report structure per finding:
-  1) Overview
-  2) Severity and CVSS (vector only)
-  3) Affected asset(s)
-  4) Technical details
-  5) Proof of concept (repro steps plus code)
-  6) Impact
-  7) Remediation
-  8) Evidence (optional request/response excerpts, etc.) in the technical analysis field.
-- Numbered steps are allowed ONLY within the proof of concept and remediation sections. Elsewhere, use clear, concise paragraphs suitable for customer-facing reports.
-- Language must be precise and non-vague; avoid hedging.
+去重说明：如果该工具返回 success=false 且提示重复，请不要重新提交。该漏洞已经被报告过了，请继续测试其他区域。
+
+面向客户的专业报告规范（适合 PDF 输出）：
+- 不要包含内部或系统细节：不要提及本地或绝对路径（例如“/workspace”）、内部工具、agents、编排器、sandbox、模型、系统提示/指令、连接问题、内部错误/日志/堆栈跟踪，或测试机环境信息。
+- 语气与风格：正式、客观、第三人称、厂商中立、简洁。不要写运行手册、检查清单或工程笔记。避免使用看起来像内部指引的标题，例如“快速”“方法”“技术”等。
+- 每个漏洞请使用标准渗透测试报告结构：
+  1）概述
+  2）严重性与 CVSS（仅向量）
+  3）受影响资产
+  4）技术细节
+  5）概念验证（复现步骤 + 代码）
+  6）影响
+  7）修复建议
+  8）证据（可选，例如请求/响应摘录等），放在 technical_analysis 字段中。
+- 序号步骤仅允许出现在“概念验证”和“修复建议”部分。其他位置请使用清晰、简洁的段落，适合面向客户的报告。
+- 语言必须准确、明确，不要含糊其辞。
 </description>
     <parameters>
       <parameter name="title" type="string" required="true">
-        <description>Clear, specific title (e.g., "SQL Injection in /api/users Login Parameter"). But not too long. Don't mention CVE number in the title.</description>
+        <description>清晰、具体的标题（例如“/api/users 登录参数中的 SQL 注入”）。不要太长。标题中不要提及 CVE 编号。请使用中文撰写。</description>
       </parameter>
       <parameter name="description" type="string" required="true">
-        <description>Comprehensive description of the vulnerability and how it was discovered</description>
+        <description>对漏洞及其发现方式的完整描述。请使用中文撰写。</description>
       </parameter>
       <parameter name="impact" type="string" required="true">
-        <description>Impact assessment: what attacker can do, business risk, data at risk</description>
+        <description>影响评估：攻击者可以做什么、业务风险是什么、哪些数据会受到影响。请使用中文撰写。</description>
       </parameter>
       <parameter name="target" type="string" required="true">
-        <description>Affected target: URL, domain, or Git repository</description>
+        <description>受影响目标：URL、域名或 Git 仓库</description>
       </parameter>
       <parameter name="technical_analysis" type="string" required="true">
-        <description>Technical explanation of the vulnerability mechanism and root cause</description>
+        <description>对漏洞机制和根因的技术说明。请使用中文撰写。</description>
       </parameter>
       <parameter name="poc_description" type="string" required="true">
-        <description>Step-by-step instructions to reproduce the vulnerability</description>
+        <description>逐步复现漏洞的说明。请使用中文撰写。</description>
       </parameter>
       <parameter name="poc_script_code" type="string" required="true">
-        <description>Actual proof of concept code, exploit, payload, or script that demonstrates the vulnerability. Python code.</description>
+        <description>能够证明漏洞存在的实际概念验证代码、利用载荷或脚本。Python 代码，代码内容保持原样，不要翻译标识符。</description>
       </parameter>
       <parameter name="remediation_steps" type="string" required="true">
-        <description>Specific, actionable steps to fix the vulnerability</description>
+        <description>具体且可执行的漏洞修复步骤。请使用中文撰写。</description>
       </parameter>
       <parameter name="cvss_breakdown" type="string" required="true">
-        <description>CVSS 3.1 base score breakdown as nested XML. All 8 metrics are required.
+        <description>以嵌套 XML 形式给出的 CVSS 3.1 基础评分拆分。8 个指标都必须提供。
 
-Each metric element contains a single uppercase letter value:
-- attack_vector: N (Network), A (Adjacent), L (Local), P (Physical)
-- attack_complexity: L (Low), H (High)
-- privileges_required: N (None), L (Low), H (High)
-- user_interaction: N (None), R (Required)
-- scope: U (Unchanged), C (Changed)
-- confidentiality: N (None), L (Low), H (High)
-- integrity: N (None), L (Low), H (High)
-- availability: N (None), L (Low), H (High)</description>
+每个指标元素只包含一个大写字母值：
+- attack_vector：N（网络）、A（相邻）、L（本地）、P（物理）
+- attack_complexity：L（低）、H（高）
+- privileges_required：N（无）、L（低）、H（高）
+- user_interaction：N（无）、R（需要）
+- scope：U（未改变）、C（已改变）
+- confidentiality：N（无）、L（低）、H（高）
+- integrity：N（无）、L（低）、H（高）
+- availability：N（无）、L（低）、H（高）</description>
         <format>
           <attack_vector>N</attack_vector>
           <attack_complexity>L</attack_complexity>
@@ -82,74 +84,75 @@ Each metric element contains a single uppercase letter value:
         </format>
       </parameter>
       <parameter name="endpoint" type="string" required="false">
-        <description>API endpoint(s) or URL path(s) (e.g., "/api/login") - for web vulnerabilities, or Git repository path(s) - for code vulnerabilities</description>
+        <description>API 端点或 URL 路径（例如“/api/login”），用于 Web 漏洞；或者 Git 仓库路径，用于代码漏洞。</description>
       </parameter>
       <parameter name="method" type="string" required="false">
-        <description>HTTP method(s) (GET, POST, etc.) - for web vulnerabilities.</description>
+        <description>HTTP 方法（GET、POST 等），用于 Web 漏洞。</description>
       </parameter>
       <parameter name="cve" type="string" required="false">
-        <description>CVE identifier. ONLY the ID, e.g. "CVE-2024-1234" — do NOT include the name or description.
-You must be 100% certain of the exact CVE number. Do NOT guess, approximate, or hallucinate CVE IDs.
-If web_search is available, use it to verify the CVE exists and matches this vulnerability. If you cannot verify it, omit this field entirely.</description>
+        <description>CVE 标识符。只填写编号，例如“CVE-2024-1234”——不要包含名称或描述。
+你必须 100% 确定准确的 CVE 编号。不要猜测、近似或臆造 CVE ID。
+如果可以使用 web_search，请用它确认该 CVE 确实存在且与该漏洞匹配。如果无法确认，请完全省略此字段。</description>
       </parameter>
       <parameter name="cwe" type="string" required="false">
-        <description>CWE identifier. ONLY the ID, e.g. "CWE-89" — do NOT include the name or parenthetical (wrong: "CWE-89 (SQL Injection)").
+        <description>CWE 标识符。只填写编号，例如“CWE-89”——不要包含名称或括号说明（错误示例：“CWE-89 (SQL Injection)”）。
 
-You must be 100% certain of the exact CWE number. Do NOT guess or approximate.
-If web_search is available and you are unsure, use it to look up the correct CWE. If you cannot be certain, omit this field entirely.
-Always prefer the most specific child CWE over a broad parent.
-For example, use CWE-89 instead of CWE-74, or CWE-78 instead of CWE-77.
+你必须 100% 确定准确的 CWE 编号。不要猜测或近似。
+如果可以使用 web_search 且你不确定，请用它查找正确的 CWE。如果无法确认，请完全省略此字段。
+始终优先使用更具体的子 CWE，而不是宽泛的父 CWE。
+例如，使用 CWE-89 而不是 CWE-74，或使用 CWE-78 而不是 CWE-77。
 
-Reference (ID only — names here are just for your reference, do NOT include them in the value):
-- Injection: CWE-79 XSS, CWE-89 SQLi, CWE-78 OS Command Injection, CWE-94 Code Injection, CWE-77 Command Injection
-- Auth/Access: CWE-287 Improper Authentication, CWE-862 Missing Authorization, CWE-863 Incorrect Authorization, CWE-306 Missing Authentication for Critical Function, CWE-639 Authorization Bypass Through User-Controlled Key
-- Web: CWE-352 CSRF, CWE-918 SSRF, CWE-601 Open Redirect, CWE-434 Unrestricted Upload of File with Dangerous Type
-- Memory: CWE-787 Out-of-bounds Write, CWE-125 Out-of-bounds Read, CWE-416 Use After Free, CWE-120 Classic Buffer Overflow
-- Data: CWE-502 Deserialization of Untrusted Data, CWE-22 Path Traversal, CWE-611 XXE
-- Crypto/Config: CWE-798 Use of Hard-coded Credentials, CWE-327 Use of Broken or Risky Cryptographic Algorithm, CWE-311 Missing Encryption of Sensitive Data, CWE-916 Password Hash With Insufficient Computational Effort
+参考（这里只写 ID，名称仅供你参考，填写值时不要带名称）：
+- 注入类：CWE-79 XSS、CWE-89 SQLi、CWE-78 OS 命令注入、CWE-94 代码注入、CWE-77 命令注入
+- 认证/访问控制：CWE-287 不正确认证、CWE-862 缺少授权、CWE-863 错误授权、CWE-306 关键功能缺少认证、CWE-639 通过用户控制键绕过授权
+- Web：CWE-352 CSRF、CWE-918 SSRF、CWE-601 开放重定向、CWE-434 允许上传危险类型文件
+- 内存：CWE-787 越界写入、CWE-125 越界读取、CWE-416 Use After Free、CWE-120 经典缓冲区溢出
+- 数据：CWE-502 反序列化不受信任数据、CWE-22 路径遍历、CWE-611 XXE
+- 加密/配置：CWE-798 使用硬编码凭据、CWE-327 使用有缺陷或有风险的加密算法、CWE-311 敏感数据未加密、CWE-916 密码哈希计算强度不足
 
-Do NOT use broad/parent CWEs like CWE-74, CWE-20, CWE-200, CWE-284, or CWE-693.</description>
+不要使用过于宽泛的父级 CWE，例如 CWE-74、CWE-20、CWE-200、CWE-284 或 CWE-693。</description>
       </parameter>
       <parameter name="code_locations" type="string" required="false">
-        <description>Nested XML list of code locations where the vulnerability exists. MANDATORY for white-box testing.
+        <description>漏洞位置的嵌套 XML 列表。白盒测试时为必填项。
 
-CRITICAL — HOW fix_before/fix_after WORK:
-fix_before and fix_after are LITERAL BLOCK-LEVEL REPLACEMENTS used directly for GitHub/GitLab PR suggestion blocks. When a reviewer clicks "Accept suggestion", the platform replaces the EXACT lines from start_line to end_line with the fix_after content. This means:
+关键说明——fix_before / fix_after 的工作方式：
+fix_before 和 fix_after 是逐字的块级替换内容，直接用于 GitHub/GitLab 的 PR 建议块。当审阅者点击“接受建议”时，平台会用 fix_after 内容替换 start_line 到 end_line 的精确行范围。这意味着：
 
-1. fix_before MUST be an EXACT, VERBATIM copy of the source code at lines start_line through end_line. Same whitespace, same indentation, same line breaks. If fix_before does not match the actual file content character-for-character, the suggestion will be wrong or will corrupt the code when accepted.
+1. fix_before 必须与源代码中 start_line 到 end_line 的内容逐字完全一致。空格、缩进、换行都必须相同。如果 fix_before 与实际文件内容有任何字符级别的不一致，建议就会错误，甚至在接受后破坏代码。
 
-2. fix_after is the COMPLETE replacement for that entire block. It replaces ALL lines from start_line to end_line. It can be more lines, fewer lines, or the same number of lines as fix_before.
+2. fix_after 是整个代码块的完整替换内容。它会替换 start_line 到 end_line 的所有行。它可以比 fix_before 更长、更短，或者长度相同。
 
-3. start_line and end_line define the EXACT line range being replaced. They must precisely cover the lines in fix_before — no more, no less. If the vulnerable code spans lines 45-48, then start_line=45 and end_line=48, and fix_before must contain all 4 lines exactly as they appear in the file.
+3. start_line 和 end_line 定义了被替换的精确行范围。它们必须准确覆盖 fix_before 中的所有行，不多不少。如果有漏洞的代码跨越 45 到 48 行，那么 start_line=45、end_line=48，且 fix_before 必须包含文件中完全一致的这 4 行。
 
-MULTI-PART FIXES:
-Many fixes require changes in multiple non-contiguous parts of a file (e.g., adding an import at the top AND changing code lower down), or across multiple files. Since each fix_before/fix_after pair covers ONE contiguous block, you MUST create SEPARATE location entries for each part of the fix:
+多段修复：
+很多修复需要修改文件中多个不连续的位置（例如：顶部新增 import，以及下方修改业务代码），或者跨多个文件。由于每个 fix_before / fix_after 对只覆盖一个连续块，因此你必须为修复的每一部分分别创建独立的 location 条目：
 
-- Each location covers one contiguous block of lines to change
-- Use the label field to describe how each part relates to the overall fix (e.g., "Add import for parameterized query library", "Replace string interpolation with parameterized query")
-- Order fix locations logically: primary fix first (where the vulnerability manifests), then supporting changes (imports, config, etc.)
+- 每个 location 只覆盖一个连续的待修改代码块
+- 使用 label 字段说明每个部分与整体修复的关系（例如：“为参数化查询库添加 import”“将字符串拼接替换为参数化查询”）
+- 按逻辑顺序排列修复位置：先放主要漏洞点，再放辅助修改（import、配置等）
 
-COMMON MISTAKES TO AVOID:
-- Do NOT guess line numbers. Read the file and verify the exact lines before reporting.
-- Do NOT paraphrase or reformat code in fix_before. It must be a verbatim copy.
-- Do NOT set start_line=end_line when the vulnerable code spans multiple lines. Cover the full range.
-- Do NOT put an import addition and a code change in the same fix_before/fix_after if they are not on adjacent lines. Split them into separate locations.
-- Do NOT include lines outside the vulnerable/fixed code in fix_before just to "pad" the range.
-- Do NOT duplicate changes across locations. Each location's fix_after must ONLY contain changes for its own line range. Never repeat a change that is already covered by another location.
+常见错误，务必避免：
+- 不要猜测行号。报告前务必阅读文件并核对准确行数。
+- 不要在 fix_before 中改写或重排代码。它必须是逐字复制。
+- 当漏洞代码跨越多行时，不要把 start_line=end_line。要覆盖完整范围。
+- 如果 import 的新增和代码修改不相邻，不要把它们放到同一个 fix_before / fix_after 中。请拆成多个位置。
+- 不要为了“凑范围”而在 fix_before 中加入漏洞/修复代码之外的行。
+- 不要在不同位置之间重复修改内容。每个位置的 fix_after 只能包含自己那一段行范围的修改内容。不要重复已经由其他位置覆盖的改动。
 
-Each location element fields:
-- file (REQUIRED): Path relative to repository root. No leading slash, no absolute paths, no ".." traversal.
-  Correct: "src/db/queries.ts" or "app/routes/users.py"
-  Wrong: "/workspace/repo/src/db/queries.ts", "./src/db/queries.ts", "../../etc/passwd"
-- start_line (REQUIRED): Exact 1-based line number where the vulnerable/affected code begins. Must be a positive integer. You must be certain of this number — go back and verify against the actual file content if needed.
-- end_line (REQUIRED): Exact 1-based line number where the vulnerable/affected code ends. Must be >= start_line. Set equal to start_line ONLY if the code is truly on a single line.
-- snippet (optional): The actual source code at this location, copied verbatim from the file.
-- label (optional): Short role description for this location. For multi-part fixes, use this to explain the purpose of each change (e.g., "Add import for escape utility", "Sanitize user input before SQL query").
-- fix_before (optional): The vulnerable code to be replaced — VERBATIM copy of lines start_line through end_line. Must match the actual source character-for-character including whitespace and indentation.
-- fix_after (optional): The corrected code that replaces the entire fix_before block. Must be syntactically valid and ready to apply as a direct replacement.
+每个 location 元素字段：
+- file（必填）：相对于仓库根目录的路径。不要以斜杠开头，不要使用绝对路径，也不要使用“..”上跳路径。
+  正确示例：“src/db/queries.ts” 或 “app/routes/users.py”
+  错误示例：“/workspace/repo/src/db/queries.ts”、“./src/db/queries.ts”、“../../etc/passwd”
+- start_line（必填）：漏洞/受影响代码开始的精确 1 基行号。必须是正整数。你必须确定这个数字——如有需要，请回到实际文件内容逐行核对。
+- end_line（必填）：漏洞/受影响代码结束的精确 1 基行号。必须大于等于 start_line。只有当代码确实只占一行时，才把它设为与 start_line 相同。
+- snippet（可选）：该位置的实际源代码内容，逐字从文件中复制。
+- label（可选）：该位置的简短角色说明。对于多段修复，用它说明这部分与整体修复的关系（例如：“为 escape 工具添加 import”“在 SQL 查询前清理用户输入”）。
+- fix_before（可选）：要替换的漏洞代码——必须是 start_line 到 end_line 的逐字复制。必须与实际源代码在字符级别完全一致，包括空格和缩进。
+- fix_after（可选）：替换整个 fix_before 块的修正代码。它必须是语法正确、可以直接替换的内容。
 
-Locations without fix_before/fix_after are informational context (e.g. showing the source of tainted data).
-Locations with fix_before/fix_after are actionable fixes (used directly for PR suggestion blocks).</description>
+不包含 fix_before / fix_after 的 location 仅用于信息上下文（例如展示受污染数据的来源）。
+包含 fix_before / fix_after 的 location 才是可执行修复（会直接用于 PR 建议块）。
+</description>
         <format>
           <location>
             <file>src/db/queries.ts</file>
@@ -178,55 +181,55 @@ const result = await db.query(query, [id]);</fix_after>
       </parameter>
     </parameters>
     <returns type="Dict[str, Any]">
-      <description>Response containing:
-- On success: success=true, message, report_id, severity, cvss_score
-- On duplicate detection: success=false, message (with duplicate info), duplicate_of (ID), duplicate_title, confidence (0-1), reason (why it's a duplicate)</description>
+      <description>返回内容：
+- 成功时：success=true、message、report_id、severity、cvss_score
+- 检测到重复时：success=false、message（包含重复信息）、duplicate_of（ID）、duplicate_title、confidence（0-1）、reason（为什么被判定为重复）</description>
     </returns>
 
     <examples>
 <function=create_vulnerability_report>
-<parameter=title>Server-Side Request Forgery (SSRF) via URL Preview Feature Enables Internal Network Access</parameter>
-<parameter=description>A server-side request forgery (SSRF) vulnerability was identified in the URL preview feature that generates rich previews for user-supplied links.
+<parameter=title>通过 URL 预览功能导致的服务器端请求伪造（SSRF）可访问内网</parameter>
+<parameter=description>在生成用户提交链接富预览的 URL 预览功能中，发现了服务器端请求伪造（SSRF）漏洞。
 
-The application performs server-side HTTP requests to retrieve metadata (title, description, thumbnails). Insufficient validation of the destination allows an attacker to coerce the server into making requests to internal network hosts and link-local addresses that are not directly reachable from the internet.
+应用会在服务端发起 HTTP 请求以获取元数据（标题、描述、缩略图）。由于对目标地址的验证不足，攻击者可以诱导服务器向互联网无法直接访问的内网主机和 link-local 地址发起请求。
 
-This issue is particularly high risk in cloud-hosted environments where link-local metadata services may expose sensitive information (e.g., instance identifiers, temporary credentials) if reachable from the application runtime.</parameter>
-<parameter=impact>Successful exploitation may allow an attacker to:
+在云托管环境中，这个问题尤其危险，因为如果应用运行时能够访问 link-local 元数据服务，就可能暴露敏感信息（例如实例标识符、临时凭据）。</parameter>
+<parameter=impact>成功利用后，攻击者可能可以：
 
-- Reach internal-only services (admin panels, service discovery endpoints, unauthenticated microservices)
-- Enumerate internal network topology based on timing and response differences
-- Access link-local services that should never be reachable from user input paths
-- Potentially retrieve sensitive configuration data and temporary credentials in certain hosting environments
+- 访问仅限内网的服务（管理面板、服务发现端点、无需认证的微服务）
+- 根据时间差和响应差异枚举内部网络拓扑
+- 访问不应能从用户输入路径到达的 link-local 服务
+- 在某些托管环境中，潜在获取敏感配置数据和临时凭据
 
-Business impact includes increased likelihood of lateral movement, data exposure from internal systems, and compromise of cloud resources if credentials are obtained.</parameter>
+业务影响包括：更高概率发生横向移动、内部系统数据泄露，以及在获取凭据后对云资源的进一步入侵。</parameter>
 <parameter=target>https://app.acme-corp.com</parameter>
-<parameter=technical_analysis>The vulnerable behavior occurs when the application accepts a user-controlled URL and fetches it server-side to generate a preview. The response body and/or selected metadata fields are then returned to the client.
+<parameter=technical_analysis>当应用接收用户控制的 URL 并在服务端抓取该地址以生成预览时，就会出现这种脆弱行为。随后，响应正文和/或部分元数据字段会返回给客户端。
 
-Observed security gaps:
-- No robust allowlist of approved outbound domains
-- No effective blocking of private, loopback, and link-local address ranges
-- Redirect handling can be leveraged to reach disallowed destinations if not revalidated after following redirects
-- DNS resolution and IP validation appear to occur without normalization safeguards, creating bypass risk (e.g., encoded IPs, mixed IPv6 notation, DNS rebinding scenarios)
+观察到的安全缺口：
+- 没有稳健的已批准出站域名白名单
+- 没有有效阻止私有地址、回环地址和 link-local 地址段
+- 如果在重定向后没有重新校验，重定向处理可能被利用来访问不允许的目标
+- DNS 解析和 IP 校验看起来没有配合规范化防护，存在绕过风险（例如编码后的 IP、混合 IPv6 表示、DNS rebinding 场景）
 
-As a result, an attacker can supply a URL that resolves to an internal destination. The server performs the request from a privileged network position, and the attacker can infer results via returned preview content or measurable response differences.</parameter>
-<parameter=poc_description>To reproduce:
+因此，攻击者可以提交一个最终解析到内网目标的 URL。服务器会从更有权限的网络位置发起请求，而攻击者可以通过返回的预览内容或可测量的响应差异推断结果。</parameter>
+<parameter=poc_description>复现步骤：
 
-1. Authenticate to the application as a standard user.
-2. Navigate to the link preview feature (e.g., “Add Link”, “Preview URL”, or equivalent UI).
-3. Submit a URL pointing to an internal resource. Example payloads:
+1. 以普通用户身份登录应用。
+2. 进入链接预览功能（例如“添加链接”“预览 URL”或同类界面）。
+3. 提交一个指向内部资源的 URL。示例载荷：
 
    - http://127.0.0.1:80/
    - http://localhost:8080/
    - http://10.0.0.1:80/
-   - http://169.254.169.254/ (link-local)
+   - http://169.254.169.254/（link-local）
 
-4. Observe that the server attempts to fetch the destination and returns either:
-   - Preview content/metadata from the target, or
-   - Error/timing differences that confirm network reachability.
+4. 观察服务器是否尝试抓取目标，并返回以下任一结果：
+   - 来自目标的预览内容/元数据，或者
+   - 能证明网络可达性的错误或时间差异。
 
-Impact validation:
-- Use a controlled internal endpoint (or a benign endpoint that returns a distinct marker) to demonstrate that the request is performed by the server, not the client.
-- If the application follows redirects, validate whether an allowlisted URL can redirect to a disallowed destination, and whether the redirected-to destination is still fetched.</parameter>
+影响验证：
+- 使用一个可控的内部端点（或者一个会返回明显标记的无害端点），证明这个请求是由服务器而不是客户端发出的。
+- 如果应用会跟随重定向，验证一个白名单 URL 是否可以重定向到不允许的目标，以及是否仍然会继续抓取重定向后的目标。</parameter>
 <parameter=poc_script_code>import json
 import time
 from urllib.parse import urljoin
@@ -265,22 +268,22 @@ def preview(url: str) -> tuple[int, float, str]:
 
 
 def main() -> int:
-    print(f"Endpoint: {PREVIEW_ENDPOINT}")
-    print("Testing SSRF candidates (server-side fetch behavior):")
+    print(f"端点：{PREVIEW_ENDPOINT}")
+    print("正在测试 SSRF 候选目标（服务端抓取行为）：")
     print()
 
     for url in TARGETS:
         try:
             status, elapsed, snippet = preview(url)
-            print(f"URL: {url}")
-            print(f"Status: {status}")
-            print(f"Elapsed: {elapsed:.2f}s")
-            print("Body (first 500 chars):")
+            print(f"URL：{url}")
+            print(f"状态：{status}")
+            print(f"耗时：{elapsed:.2f}s")
+            print("正文（前 500 个字符）：")
             print(snippet)
             print("-" * 60)
         except requests.RequestException as e:
-            print(f"URL: {url}")
-            print(f"Request failed: {e}")
+            print(f"URL：{url}")
+            print(f"请求失败：{e}")
             print("-" * 60)
 
     return 0
@@ -288,30 +291,30 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())</parameter>
-<parameter=remediation_steps>Implement layered SSRF defenses:
+<parameter=remediation_steps>实施分层 SSRF 防护：
 
-1. Explicit allowlist for outbound destinations
-   - Only permit fetching from a maintained set of approved domains (and required schemes).
-   - Reject all other destinations by default.
+1. 对出站目标使用显式白名单
+   - 仅允许从维护中的已批准域名集合（以及所需协议）中抓取内容。
+   - 默认拒绝所有其他目标。
 
-2. Robust IP range blocking after DNS resolution
-   - Resolve the hostname and block private, loopback, link-local, and reserved ranges for both IPv4 and IPv6.
-   - Re-validate on every redirect hop; do not follow redirects to disallowed destinations.
+2. DNS 解析后进行稳健的 IP 段阻断
+   - 解析主机名，并阻止 IPv4 和 IPv6 的私有地址、回环地址、link-local 地址以及保留地址段。
+   - 在每一次重定向跳转后都重新校验；不要跟随到不允许的目标。
 
-3. URL normalization and parser hardening
-   - Normalize and validate the URL using a strict parser.
-   - Reject ambiguous encodings and unusual notations that can bypass filters.
+3. URL 规范化与解析器加固
+   - 使用严格的解析器对 URL 做规范化和校验。
+   - 拒绝可能绕过过滤器的歧义编码和非常规写法。
 
-4. Network egress controls (defense in depth)
-   - Enforce outbound firewall rules so the application runtime cannot reach sensitive internal ranges or link-local addresses.
-   - If previews are required, route outbound requests through a dedicated egress proxy with policy enforcement and auditing.
+4. 网络出站控制（纵深防御）
+   - 强制执行出站防火墙规则，使应用运行时无法访问敏感内网段或 link-local 地址。
+   - 如果必须支持预览，请通过专用的出站代理路由请求，并在代理层执行策略和审计。
 
-5. Response handling hardening
-   - Avoid returning raw response bodies from previews.
-   - Strictly limit what metadata is returned and apply size/time limits to outbound fetches.
+5. 加固响应处理
+   - 不要直接返回预览抓取到的原始响应正文。
+   - 严格限制返回的元数据，并对出站抓取设置大小和时间限制。
 
-6. Monitoring and alerting
-   - Log and alert on preview attempts to unusual destinations, repeated failures, high-frequency requests, or attempts to access blocked ranges.</parameter>
+6. 监控与告警
+   - 记录并告警：访问异常目标的预览尝试、重复失败、高频请求或尝试访问被阻止网段的行为。</parameter>
 <parameter=cvss_breakdown>
   <attack_vector>N</attack_vector>
   <attack_complexity>L</attack_complexity>
@@ -334,7 +337,7 @@ if __name__ == "__main__":
   const response = await fetch(userUrl, options);
   const html = await response.text();
   return extractMetadata(html);</snippet>
-    <label>Unvalidated user URL passed to server-side fetch (sink)</label>
+            <label>未校验的用户 URL 进入服务端抓取（漏洞点）</label>
     <fix_before>  const options = { timeout: 5000 };
   const response = await fetch(userUrl, options);
   const html = await response.text();
@@ -351,7 +354,7 @@ if __name__ == "__main__":
     <start_line>2</start_line>
     <end_line>2</end_line>
     <snippet>import { extractMetadata } from '../utils/html';</snippet>
-    <label>Add import for URL validation utility</label>
+            <label>为 URL 校验工具添加 import</label>
     <fix_before>import { extractMetadata } from '../utils/html';</fix_before>
     <fix_after>import { extractMetadata } from '../utils/html';
 import { validateAndResolveUrl } from '../utils/url-validator';</fix_after>
@@ -361,7 +364,7 @@ import { validateAndResolveUrl } from '../utils/url-validator';</fix_after>
     <start_line>12</start_line>
     <end_line>12</end_line>
     <snippet>const userUrl = req.body.url</snippet>
-    <label>User-controlled URL from request body (source)</label>
+            <label>来自请求体的用户控制 URL（来源）</label>
   </location>
 </parameter>
 </function>

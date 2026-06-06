@@ -5,8 +5,15 @@ from typing import Any
 
 import litellm
 
+from strix.config import Config
 from strix.config.config import resolve_llm_config
-from strix.llm.utils import resolve_strix_model
+from strix.llm.utils import (
+    deepseek_completion_kwargs,
+    is_deepseek_model,
+    is_qwen_model,
+    qwen_completion_kwargs,
+    resolve_strix_model,
+)
 
 
 logger = logging.getLogger(__name__)
@@ -181,6 +188,12 @@ def check_duplicate(
             completion_kwargs["api_key"] = api_key
         if api_base:
             completion_kwargs["api_base"] = api_base
+        if is_qwen_model(model_name):
+            completion_kwargs.update(qwen_completion_kwargs())
+        elif is_deepseek_model(model_name):
+            completion_kwargs.update(
+                deepseek_completion_kwargs(Config.get("strix_reasoning_effort"))
+            )
 
         response = litellm.completion(**completion_kwargs)
 

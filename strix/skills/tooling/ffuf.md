@@ -1,9 +1,9 @@
 ---
 name: ffuf
-description: ffuf fuzzing syntax with matcher/filter strategy and non-interactive defaults.
+description: FFUF 模糊测试工具的使用指南
 ---
 
-# ffuf CLI Playbook
+# FFUF 工具指南
 
 Official docs:
 - https://github.com/ffuf/ffuf

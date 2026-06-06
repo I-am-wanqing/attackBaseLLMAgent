@@ -48,14 +48,14 @@ def render_tool_widget(tool_data: dict[str, Any]) -> Static:
 
 
 def _render_default_tool_widget(tool_data: dict[str, Any]) -> Static:
-    tool_name = tool_data.get("tool_name", "Unknown Tool")
+    tool_name = tool_data.get("tool_name", "未知工具")
     args = tool_data.get("args", {})
     status = tool_data.get("status", "unknown")
     result = tool_data.get("result")
 
     text = Text()
 
-    text.append("→ Using tool ", style="dim")
+    text.append("→ 正在使用工具 ", style="dim")
     text.append(tool_name, style="bold blue")
     text.append("\n")
 
@@ -69,7 +69,7 @@ def _render_default_tool_widget(tool_data: dict[str, Any]) -> Static:
 
     if status in ["completed", "failed", "error"] and result is not None:
         result_str = str(result)
-        text.append("Result: ", style="bold")
+        text.append("结果：", style="bold")
         text.append(result_str)
     else:
         icon, color = BaseToolRenderer.status_icon(status)

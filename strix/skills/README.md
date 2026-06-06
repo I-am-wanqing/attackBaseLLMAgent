@@ -1,6 +1,6 @@
 # 📚 Strix Skills
 
-## 🎯 Overview
+## 🎯 概览
 
 Skills are specialized knowledge packages that enhance Strix agents with deep expertise in specific vulnerability types, technologies, and testing methodologies. Each skill provides advanced techniques, practical examples, and validation methods that go beyond baseline security knowledge.
 
@@ -25,7 +25,7 @@ The skills are dynamically injected into the agent's system prompt, allowing it 
 
 ---
 
-## 📁 Skill Categories
+## 📁 技能分类
 
 | Category | Purpose |
 |----------|---------|
@@ -34,7 +34,7 @@ The skills are dynamically injected into the agent's system prompt, allowing it 
 | **`/technologies`** | Specialized techniques for third-party services such as Supabase, Firebase, Auth0, and payment gateways |
 | **`/protocols`** | Protocol-specific testing patterns for GraphQL, WebSocket, OAuth, and other communication standards |
 | **`/tooling`** | Command-line playbooks for core sandbox tools (nmap, nuclei, httpx, ffuf, subfinder, naabu, katana, sqlmap) |
-| **`/cloud`** | Cloud provider security testing for AWS, Azure, GCP, and Kubernetes environments |
+| **`/cloud`** | 云端 provider security testing for AWS, Azure, GCP, and Kubernetes environments |
 | **`/reconnaissance`** | Advanced information gathering and enumeration techniques for comprehensive attack surface mapping |
 | **`/custom`** | Community-contributed skills for specialized or industry-specific testing scenarios |
 
@@ -50,9 +50,9 @@ Notable source-aware skills:
 
 A good skill is a structured knowledge package that typically includes:
 
-- **Advanced techniques** - Non-obvious methods specific to the task and domain
-- **Practical examples** - Working payloads, commands, or test cases with variations
-- **Validation methods** - How to confirm findings and avoid false positives
+- **高级技巧** - Non-obvious methods specific to the task and domain
+- **Practical examples** - 可用载荷, commands, or test cases with variations
+- **验证方法** - 如何确认发现并避免误报
 - **Context-specific insights** - Environment and version nuances, configuration-dependent behavior, and edge cases
 - **YAML frontmatter** - `name` and `description` fields for skill metadata
 

@@ -1,22 +1,22 @@
 ---
-title: "Configuration"
+title: "配置"
 description: "Environment variables for Strix"
 ---
 
 Configure Strix using environment variables or a config file.
 
-## LLM Configuration
+## LLM 配置
 
 <ParamField path="STRIX_LLM" type="string" required>
-  Model name in LiteLLM format (e.g., `openai/gpt-5.4`, `anthropic/claude-sonnet-4-6`).
+  模型名称 in LiteLLM format (e.g., `openai/gpt-5.4`, `anthropic/claude-sonnet-4-6`).
 </ParamField>
 
 <ParamField path="LLM_API_KEY" type="string">
-  API key for your LLM provider. Not required for local models or cloud provider auth (Vertex AI, AWS Bedrock).
+  LLM 提供方的 API 密钥. Not required for local models or cloud provider auth (Vertex AI, AWS Bedrock).
 </ParamField>
 
 <ParamField path="LLM_API_BASE" type="string">
-  Custom API base URL. Also accepts `OPENAI_API_BASE`, `LITELLM_BASE_URL`, or `OLLAMA_API_BASE`.
+  Custom API 基础地址 URL. Also accepts `OPENAI_API_BASE`, `LITELLM_BASE_URL`, or `OLLAMA_API_BASE`.
 </ParamField>
 
 <ParamField path="LLM_TIMEOUT" default="300" type="integer">
@@ -35,7 +35,7 @@ Configure Strix using environment variables or a config file.
   Timeout in seconds for memory compression operations (context summarization).
 </ParamField>
 
-## Optional Features
+## Optional 功能
 
 <ParamField path="PERPLEXITY_API_KEY" type="string">
   API key for Perplexity AI. Enables real-time web search during scans for OSINT and vulnerability research.
@@ -77,7 +77,7 @@ strix_runs/<run_name>/events.jsonl
 
 When remote vars are set, Strix dual-writes telemetry to both local JSONL and the remote OTEL endpoint.
 
-## Docker Configuration
+## Docker 配置
 
 <ParamField path="STRIX_IMAGE" default="ghcr.io/usestrix/strix-sandbox:0.1.13" type="string">
   Docker image to use for the sandbox container.
@@ -91,7 +91,7 @@ When remote vars are set, Strix dual-writes telemetry to both local JSONL and th
   Runtime backend for the sandbox environment.
 </ParamField>
 
-## Sandbox Configuration
+## Sandbox 配置
 
 <ParamField path="STRIX_SANDBOX_EXECUTION_TIMEOUT" default="120" type="integer">
   Maximum execution time in seconds for sandbox operations.
@@ -109,7 +109,7 @@ Strix stores configuration in `~/.strix/cli-config.json`. You can also specify a
 strix --target ./app --config /path/to/config.json
 ```
 
-**Config file format:**
+**配置文件格式：**
 
 ```json
 {

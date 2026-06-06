@@ -1,13 +1,13 @@
 ---
 name: race-conditions
-description: Race condition testing for TOCTOU bugs, double-spend, and concurrent state manipulation
+description: 竞态条件与 TOCTOU 安全测试技能
 ---
 
-# Race Conditions
+# 竞争条件
 
 Concurrency bugs enable duplicate state changes, quota bypass, financial abuse, and privilege errors. Treat every read–modify–write and multi-step workflow as adversarially concurrent.
 
-## Attack Surface
+## 攻击面
 
 **Read-Modify-Write**
 - Sequences without atomicity or proper locking
@@ -47,7 +47,7 @@ Concurrency bugs enable duplicate state changes, quota bypass, financial abuse, 
 - Distinct response shapes/timings for simultaneous vs sequential requests
 - Audit logs out of order; multiple 2xx for the same intent; missing or duplicate correlation IDs
 
-## Key Vulnerabilities
+## 关键漏洞
 
 ### Request Synchronization
 
@@ -101,7 +101,7 @@ Concurrency bugs enable duplicate state changes, quota bypass, financial abuse, 
 - Intentionally trigger timeouts to provoke retries that cause duplicate side effects
 - Degrade the target (large payloads, slow endpoints) to widen race windows
 
-## Special Contexts
+## 特殊场景
 
 ### GraphQL
 
@@ -131,9 +131,9 @@ Concurrency bugs enable duplicate state changes, quota bypass, financial abuse, 
 - Race + CSRF: trigger parallel actions from a victim to amplify effects
 - Race + Caching: stale caches re-serve privileged states after concurrent changes
 
-## Testing Methodology
+## 测试方法
 
-1. **Model invariants** - Conservation of value, uniqueness, maximums for each workflow
+1. **模式l invariants** - Conservation of value, uniqueness, maximums for each workflow
 2. **Identify reads/writes** - Where they occur (service, DB, cache)
 3. **Baseline** - Single requests to establish expected behavior
 4. **Concurrent requests** - Issue parallel requests with identical inputs; observe deltas
@@ -141,7 +141,7 @@ Concurrency bugs enable duplicate state changes, quota bypass, financial abuse, 
 6. **Cross-channel** - Test across web, API, GraphQL, WebSocket
 7. **Confirm durability** - Verify state changes persist and are reproducible
 
-## Validation
+## 验证
 
 1. Single request denied; N concurrent requests succeed where only 1 should
 2. Durable state change proven (ledger entries, inventory counts, role/flag changes)
@@ -149,21 +149,21 @@ Concurrency bugs enable duplicate state changes, quota bypass, financial abuse, 
 4. Evidence across channels (e.g., REST and GraphQL) if applicable
 5. Include before/after state and exact request set used
 
-## False Positives
+## 误报
 
 - Truly idempotent operations with enforced ETag/version checks or unique constraints
 - Serializable transactions or correct advisory locks/queues
 - Visual-only glitches without durable state change
 - Rate limits that reject excess with atomic counters
 
-## Impact
+## 影响
 
 - Financial loss (double spend, over-issuance of credits/refunds)
 - Policy/limit bypass (quotas, single-use tokens, seat counts)
 - Data integrity corruption and audit trail inconsistencies
 - Privilege or role errors due to concurrent updates
 
-## Pro Tips
+## 实战技巧
 
 1. Favor HTTP/2 with warmed connections; add last-byte sync for precision
 2. Start small (N=5–20), then scale; too much noise can mask the window
@@ -176,6 +176,6 @@ Concurrency bugs enable duplicate state changes, quota bypass, financial abuse, 
 9. Validate on production-like latency; some races only appear under real load
 10. Document minimal, repeatable request sets that demonstrate durable impact
 
-## Summary
+## 总结
 
 Concurrency safety is a property of every path that mutates state. If any path lacks atomicity, proper isolation, or idempotency, parallel requests will eventually break invariants.

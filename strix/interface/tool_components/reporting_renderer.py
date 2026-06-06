@@ -108,48 +108,48 @@ class CreateVulnerabilityReportRenderer(BaseToolRenderer):
 
         text = Text()
         text.append("🐞 ")
-        text.append("Vulnerability Report", style="bold #ea580c")
+        text.append("漏洞报告", style="bold #ea580c")
 
         if title:
             text.append("\n\n")
-            text.append("Title: ", style=FIELD_STYLE)
+            text.append("标题：", style=FIELD_STYLE)
             text.append(title)
 
         if severity:
             text.append("\n\n")
-            text.append("Severity: ", style=FIELD_STYLE)
+            text.append("严重性：", style=FIELD_STYLE)
             severity_color = cls.SEVERITY_COLORS.get(severity.lower(), "#6b7280")
             text.append(severity.upper(), style=f"bold {severity_color}")
 
         if cvss_score is not None:
             text.append("\n\n")
-            text.append("CVSS Score: ", style=FIELD_STYLE)
+            text.append("CVSS 评分：", style=FIELD_STYLE)
             cvss_color = cls._get_cvss_color(cvss_score)
             text.append(str(cvss_score), style=f"bold {cvss_color}")
 
         if target:
             text.append("\n\n")
-            text.append("Target: ", style=FIELD_STYLE)
+            text.append("目标：", style=FIELD_STYLE)
             text.append(target)
 
         if endpoint:
             text.append("\n\n")
-            text.append("Endpoint: ", style=FIELD_STYLE)
+            text.append("端点：", style=FIELD_STYLE)
             text.append(endpoint)
 
         if method:
             text.append("\n\n")
-            text.append("Method: ", style=FIELD_STYLE)
+            text.append("方法：", style=FIELD_STYLE)
             text.append(method)
 
         if cve:
             text.append("\n\n")
-            text.append("CVE: ", style=FIELD_STYLE)
+            text.append("CVE：", style=FIELD_STYLE)
             text.append(cve)
 
         if cwe:
             text.append("\n\n")
-            text.append("CWE: ", style=FIELD_STYLE)
+            text.append("CWE：", style=FIELD_STYLE)
             text.append(cwe)
 
         parsed_cvss = parse_cvss_xml(cvss_breakdown_xml) if cvss_breakdown_xml else None
@@ -169,24 +169,24 @@ class CreateVulnerabilityReportRenderer(BaseToolRenderer):
                 val = parsed_cvss.get(key)
                 if val:
                     cvss_parts.append(f"{prefix}:{val}")
-            text.append("CVSS Vector: ", style=FIELD_STYLE)
+            text.append("CVSS 向量：", style=FIELD_STYLE)
             text.append("/".join(cvss_parts), style=DIM_STYLE)
 
         if description:
             text.append("\n\n")
-            text.append("Description", style=FIELD_STYLE)
+            text.append("描述", style=FIELD_STYLE)
             text.append("\n")
             text.append(description)
 
         if impact:
             text.append("\n\n")
-            text.append("Impact", style=FIELD_STYLE)
+            text.append("影响", style=FIELD_STYLE)
             text.append("\n")
             text.append(impact)
 
         if technical_analysis:
             text.append("\n\n")
-            text.append("Technical Analysis", style=FIELD_STYLE)
+            text.append("技术分析", style=FIELD_STYLE)
             text.append("\n")
             text.append(technical_analysis)
 
@@ -195,10 +195,10 @@ class CreateVulnerabilityReportRenderer(BaseToolRenderer):
         )
         if parsed_locations:
             text.append("\n\n")
-            text.append("Code Locations", style=FIELD_STYLE)
+            text.append("代码位置", style=FIELD_STYLE)
             for i, loc in enumerate(parsed_locations):
                 text.append("\n\n")
-                text.append(f"  Location {i + 1}: ", style=DIM_STYLE)
+                text.append(f"  位置 {i + 1}: ", style=DIM_STYLE)
                 text.append(loc.get("file", "unknown"), style=FILE_STYLE)
                 start = loc.get("start_line")
                 end = loc.get("end_line")
@@ -214,7 +214,7 @@ class CreateVulnerabilityReportRenderer(BaseToolRenderer):
                     text.append(loc["snippet"], style=CODE_STYLE)
                 if loc.get("fix_before") or loc.get("fix_after"):
                     text.append("\n  ")
-                    text.append("Fix:", style=DIM_STYLE)
+                    text.append("修复：", style=DIM_STYLE)
                     if loc.get("fix_before"):
                         text.append("\n  ")
                         text.append("- ", style=BEFORE_STYLE)
@@ -226,25 +226,25 @@ class CreateVulnerabilityReportRenderer(BaseToolRenderer):
 
         if poc_description:
             text.append("\n\n")
-            text.append("PoC Description", style=FIELD_STYLE)
+            text.append("PoC 描述", style=FIELD_STYLE)
             text.append("\n")
             text.append(poc_description)
 
         if poc_script_code:
             text.append("\n\n")
-            text.append("PoC Code", style=FIELD_STYLE)
+            text.append("概念验证代码", style=FIELD_STYLE)
             text.append("\n")
             text.append_text(cls._highlight_python(poc_script_code))
 
         if remediation_steps:
             text.append("\n\n")
-            text.append("Remediation", style=FIELD_STYLE)
+            text.append("修复建议", style=FIELD_STYLE)
             text.append("\n")
             text.append(remediation_steps)
 
         if not title:
             text.append("\n  ")
-            text.append("Creating report...", style="dim")
+            text.append("正在创建报告...", style="dim")
 
         padded = Text()
         padded.append("\n\n")

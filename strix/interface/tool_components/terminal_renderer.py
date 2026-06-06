@@ -20,11 +20,11 @@ STRIP_PATTERNS = [
         r"\s*(?:Use C-c to interrupt if needed\.)?\]"
     ),
     r"^\[Below is the output of the previous command\.\]\n?",
-    r"^No command is currently running\. Cannot send input\.$",
-    (
-        r"^A command is already running\. Use is_input=true to send input to it, "
-        r"or interrupt it first \(e\.g\., with C-c\)\.$"
-    ),
+    r"^当前没有正在运行的命令。无法发送输入\.$",
+        (
+            r"^已有命令正在运行。请使用 is_input=true 向其发送输入，"
+            r"或先中断它（例如使用 C-c）。$"
+        ),
 ]
 
 
@@ -148,7 +148,7 @@ class TerminalRenderer(BaseToolRenderer):
         if not command.strip():
             text.append(terminal_icon, style="dim")
             text.append(" ")
-            text.append("getting logs...", style="dim")
+            text.append("正在获取日志...", style="dim")
             if result:
                 cls._append_output(text, result, status, command)
             return text
@@ -224,7 +224,7 @@ class TerminalRenderer(BaseToolRenderer):
 
         if error and not cls._is_status_message(error):
             text.append("\n")
-            text.append("  error: ", style="bold #ef4444")
+            text.append("  错误：", style="bold #ef4444")
             text.append(cls._truncate_line(error), style="#ef4444")
             return
 
@@ -238,7 +238,7 @@ class TerminalRenderer(BaseToolRenderer):
         if not output or not output.strip():
             if exit_code is not None and exit_code != 0:
                 text.append("\n")
-                text.append(f"  exit {exit_code}", style="dim #ef4444")
+                text.append(f"  退出码 {exit_code}", style="dim #ef4444")
             return
 
         text.append("\n")
@@ -247,17 +247,17 @@ class TerminalRenderer(BaseToolRenderer):
 
         if exit_code is not None and exit_code != 0:
             text.append("\n")
-            text.append(f"  exit {exit_code}", style="dim #ef4444")
+            text.append(f"  退出码 {exit_code}", style="dim #ef4444")
 
     @classmethod
     def _is_status_message(cls, message: str) -> bool:
         status_patterns = [
-            r"No command is currently running",
-            r"A command is already running",
-            r"Cannot send input",
-            r"Use is_input=true",
-            r"Use C-c to interrupt",
-            r"showing output so far",
+            r"当前没有正在运行的命令",
+            r"已有命令正在运行",
+            r"无法发送输入",
+            r"请使用 is_input=true",
+            r"使用 C-c 中断",
+            r"正在显示当前输出",
         ]
         return any(re.search(pattern, message) for pattern in status_patterns)
 
@@ -287,7 +287,7 @@ class TerminalRenderer(BaseToolRenderer):
                 text.append("\n")
 
         if truncated:
-            text.append(f"  ... {hidden_count} lines truncated ...", style="dim italic")
+            text.append(f"  ... 已截断 {hidden_count} 行 ...", style="dim italic")
             text.append("\n")
             tail_lines = lines[-tail_count:]
             for i, line in enumerate(tail_lines):

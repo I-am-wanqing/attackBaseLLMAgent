@@ -71,6 +71,20 @@ def test_create_agent_inherits_parent_whitebox_flag(monkeypatch) -> None:
     assert "mandatory" not in child_task.lower()
 
 
+def test_blackbox_graph_worker_cannot_create_subagents() -> None:
+    result = agents_graph_actions.create_agent(
+        agent_state=SimpleNamespace(
+            agent_id="graph-worker",
+            context={"blackbox_graph_worker": True},
+        ),
+        task="expand scope",
+        name="Forbidden Child",
+    )
+
+    assert result["success"] is False
+    assert "cannot create subagents" in result["error"]
+
+
 def test_delegation_prompt_includes_wiki_memory_instruction_in_whitebox(monkeypatch) -> None:
     monkeypatch.setenv("STRIX_LLM", "openai/gpt-5")
 

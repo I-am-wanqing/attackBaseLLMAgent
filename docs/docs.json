@@ -11,17 +11,17 @@
   "navigation": {
     "tabs": [
       {
-        "tab": "Documentation",
+        "tab": "文档",
         "groups": [
           {
-            "group": "Getting Started",
+            "group": "快速上手",
             "pages": [
               "index",
               "quickstart"
             ]
           },
           {
-            "group": "Usage",
+            "group": "使用",
             "pages": [
               "usage/cli",
               "usage/scan-modes",
@@ -29,9 +29,10 @@
             ]
           },
           {
-            "group": "LLM Providers",
+            "group": "LLM 提供方",
             "pages": [
               "llm-providers/overview",
+              "llm-providers/deepseek",
               "llm-providers/openai",
               "llm-providers/anthropic",
               "llm-providers/openrouter",
@@ -43,14 +44,14 @@
             ]
           },
           {
-            "group": "Integrations",
+            "group": "集成",
             "pages": [
               "integrations/github-actions",
               "integrations/ci-cd"
             ]
           },
           {
-            "group": "Tools",
+            "group": "工具",
             "pages": [
               "tools/overview",
               "tools/browser",
@@ -60,7 +61,7 @@
             ]
           },
           {
-            "group": "Advanced",
+            "group": "高级",
             "pages": [
               "advanced/configuration",
               "advanced/skills",
@@ -70,10 +71,10 @@
         ]
       },
       {
-        "tab": "Cloud",
+        "tab": "云端",
         "groups": [
           {
-            "group": "Strix Cloud",
+            "group": "Strix 云端",
             "pages": [
               "cloud/overview"
             ]
@@ -100,7 +101,7 @@
     "links": [],
     "primary": {
       "type": "button",
-      "label": "Try Strix Cloud",
+      "label": "试用 Strix 云端",
       "href": "https://app.strix.ai"
     }
   },
@@ -123,7 +124,7 @@
   "appearance": {
     "default": "dark"
   },
-  "description": "Open-source AI Hackers to secure your Apps",
+  "description": "开源 AI 黑客，守护你的应用",
   "background": {
     "decoration": "grid"
   }

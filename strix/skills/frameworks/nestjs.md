@@ -1,17 +1,17 @@
 ---
 name: nestjs
-description: Security testing playbook for NestJS applications covering guards, pipes, decorators, module boundaries, and multi-transport auth
+description: 面向 NestJS 应用的安全测试技能
 ---
 
 # NestJS
 
 Security testing for NestJS applications. Focus on guard gaps across decorator stacks, validation pipe bypasses, module boundary leaks, and inconsistent auth enforcement across HTTP, WebSocket, and microservice transports.
 
-## Attack Surface
+## 攻击面
 
 **Decorator Pipeline**
 - Guards: `@UseGuards`, `CanActivate`, execution context (HTTP/WS/RPC), `Reflector` metadata
-- Pipes: `ValidationPipe` (whitelist, transform, forbidNonWhitelisted), `ParseIntPipe`, custom pipes
+- Pipes: `验证Pipe` (whitelist, transform, forbidNonWhitelisted), `ParseIntPipe`, custom pipes
 - Interceptors: response mapping, caching, logging, timeout — can modify request/response flow
 - Filters: exception filters that may leak information
 - Metadata: `@SetMetadata`, `@Public()`, `@Roles()`, `@Permissions()`
@@ -76,7 +76,7 @@ For each controller and method, identify:
 - Method-level guards (`@UseGuards` on individual handlers)
 - `@Public()` or `@SkipThrottle()` decorators that bypass protection
 
-## Key Vulnerabilities
+## 关键漏洞
 
 ### Guard Bypass
 
@@ -93,7 +93,7 @@ For each controller and method, identify:
 - Guard reads `SetMetadata('roles', [...])` but decorator sets `'role'` (singular) — guard sees no metadata, defaults to allow.
 - `applyDecorators()` compositions accidentally overriding stricter guards with permissive ones.
 
-### Validation Pipe Exploits
+### 验证 Pipe Exploits
 
 **Whitelist Bypass**
 - `whitelist: true` without `forbidNonWhitelisted: true`: extra properties silently stripped but may have been processed by earlier middleware/interceptors.
@@ -104,7 +104,7 @@ For each controller and method, identify:
 - `transform: true` enables implicit coercion: strings → numbers, `"true"` → `true`, `"null"` → `null`.
 - Exploit truthiness assumptions in business logic downstream.
 
-**Conditional Validation**
+**Conditional 验证**
 - `@ValidateIf()` and validation groups creating paths where fields skip validation entirely.
 
 **Missing Parse Pipes**
@@ -166,7 +166,7 @@ For each controller and method, identify:
 
 - `@MessagePattern`/`@EventPattern` handlers often lack guards (considered "internal").
 - If transport (Redis, NATS, Kafka) is network-accessible, messages can be injected bypassing all HTTP security.
-- `ValidationPipe` may only be configured for HTTP — microservice payloads skip validation.
+- `验证Pipe` may only be configured for HTTP — microservice payloads skip validation.
 
 ### ORM Injection
 
@@ -203,20 +203,20 @@ For each controller and method, identify:
 - Content-type switching: `application/x-www-form-urlencoded` instead of JSON to bypass JSON-specific validation
 - Exception filter differences: guard throwing results in generic error that leaks route existence info
 
-## Testing Methodology
+## 测试方法
 
 1. **Enumerate** — Fetch Swagger/OpenAPI, map all controllers, resolvers, and gateways
 2. **Guard audit** — Map decorator stack per method: which guards, pipes, interceptors are applied at each level
 3. **Matrix testing** — Test each endpoint across: unauth/user/admin × HTTP/WS/microservice
-4. **Validation probing** — Send extra fields, wrong types, nested objects, arrays to find pipe gaps
+4. **验证 probing** — Send extra fields, wrong types, nested objects, arrays to find pipe gaps
 5. **Transport parity** — Same operation via HTTP, WebSocket, and microservice transport
 6. **Module boundaries** — Check if providers from one module are accessible without proper imports
 7. **Serialization check** — Compare raw entity fields with API response fields
 
-## Validation Requirements
+## 验证 Requirements
 
 - Guard bypass: request to guarded endpoint succeeding without auth, showing guard chain break point
-- Validation bypass: payload with extra/malformed fields affecting business logic
+- 验证 bypass: payload with extra/malformed fields affecting business logic
 - Cross-transport inconsistency: same action authorized via HTTP but exploitable via WebSocket/microservice
 - Module boundary leak: accessing provider or data across unauthorized module boundaries
 - Serialization leak: response containing excluded fields (passwords, internal metadata)

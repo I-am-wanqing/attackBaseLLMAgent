@@ -1,9 +1,9 @@
 ---
 name: deep
-description: Exhaustive security assessment with maximum coverage, depth, and vulnerability chaining
+description: 适用于全面安全审查的深度扫描策略
 ---
 
-# Deep Testing Mode
+# 深度扫描模式
 
 Exhaustive security assessment. Maximum coverage, maximum depth. Finding what others miss is the goal.
 
@@ -58,7 +58,7 @@ Create a complete storyboard of the application:
 
 Use the application extensively as every user type to understand the full data lifecycle.
 
-## Phase 3: Comprehensive Attack Surface Testing
+## Phase 3: Comprehensive 攻击面 Testing
 
 Test every input vector with every applicable technique.
 

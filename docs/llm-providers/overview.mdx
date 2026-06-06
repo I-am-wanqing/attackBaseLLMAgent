@@ -1,15 +1,15 @@
 ---
-title: "Overview"
-description: "Configure your AI model for Strix"
+title: "概览"
+description: "为 Strix 配置你的 AI 模型"
 ---
 
-Strix uses [LiteLLM](https://docs.litellm.ai/docs/providers) for model compatibility, supporting 100+ LLM providers.
+Strix 使用 [LiteLLM](https://docs.litellm.ai/docs/providers) 以兼容模型，支持 100+ 个 LLM 提供方。
 
-## Configuration
+## 配置
 
-Set your model and API key:
+设置你的模型和 API 密钥：
 
-| Model             | Provider      | Configuration                    |
+| 模型             | 提供方      | 配置                    |
 | ----------------- | ------------- | -------------------------------- |
 | GPT-5.4           | OpenAI        | `openai/gpt-5.4`                 |
 | Claude Sonnet 4.6 | Anthropic     | `anthropic/claude-sonnet-4-6`    |
@@ -20,46 +20,46 @@ export STRIX_LLM="openai/gpt-5.4"
 export LLM_API_KEY="your-api-key"
 ```
 
-## Local Models
+## 本地模型
 
-Run models locally with [Ollama](https://ollama.com), [LM Studio](https://lmstudio.ai), or any OpenAI-compatible server:
+可通过 [Ollama](https://ollama.com)、[LM Studio](https://lmstudio.ai) 或任意兼容 OpenAI 的服务在本地运行模型：
 
 ```bash
 export STRIX_LLM="ollama/llama4"
 export LLM_API_BASE="http://localhost:11434"
 ```
 
-See the [Local Models guide](/llm-providers/local) for setup instructions and recommended models.
+有关设置说明和推荐模型，请参阅 [本地模型指南](/llm-providers/local)。
 
-## Provider Guides
+## 提供方指南
 
 <CardGroup cols={2}>
   <Card title="OpenAI" href="/llm-providers/openai">
-    GPT-5.4 models.
+    GPT-5.4 系列模型。
   </Card>
   <Card title="Anthropic" href="/llm-providers/anthropic">
-    Claude Opus, Sonnet, and Haiku.
+    Claude Opus、Sonnet 和 Haiku。
   </Card>
   <Card title="OpenRouter" href="/llm-providers/openrouter">
-    Access 100+ models through a single API.
+    通过单一 API 访问 100+ 个模型。
   </Card>
   <Card title="Google Vertex AI" href="/llm-providers/vertex">
-    Gemini 3 models via Google Cloud.
+    通过 Google 云平台使用 Gemini 3 模型。
   </Card>
   <Card title="AWS Bedrock" href="/llm-providers/bedrock">
-    Claude and Titan models via AWS.
+    通过 AWS 使用 Claude 和 Titan 模型。
   </Card>
   <Card title="Azure OpenAI" href="/llm-providers/azure">
-    GPT-5.4 via Azure.
+    通过 Azure 使用 GPT-5.4。
   </Card>
-  <Card title="Local Models" href="/llm-providers/local">
-    Llama 4, Mistral, and self-hosted models.
+  <Card title="本地模型" href="/llm-providers/local">
+    Llama 4、Mistral 和自托管模型。
   </Card>
 </CardGroup>
 
-## Model Format
+## 模型格式
 
-Use LiteLLM's `provider/model-name` format:
+使用 LiteLLM 的 `provider/model-name` 格式：
 
 ```
 openai/gpt-5.4

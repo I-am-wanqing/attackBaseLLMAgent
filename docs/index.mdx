@@ -1,101 +1,101 @@
 ---
-title: "Introduction"
-description: "Open-source AI hackers to secure your apps"
+title: "介绍"
+description: "开源 AI 黑客，守护你的应用"
 ---
 
-Strix are autonomous AI agents that act like real hackers—they run your code dynamically, find vulnerabilities, and validate them with proof-of-concepts. Built for developers and security teams who need fast, accurate security testing without the overhead of manual pentesting or the false positives of static analysis tools.
+Strix 是自主 AI 智能体，像真实黑客一样工作：动态运行你的代码、发现漏洞，并用概念验证进行验证。 它面向需要快速、准确安全测试的开发者和安全团队，避免了人工渗透测试的额外成本以及静态分析工具带来的误报。
 
 <Frame>
   <img src="/images/screenshot.png" alt="Strix Demo" />
 </Frame>
 
 <CardGroup cols={2}>
-  <Card title="Quick Start" icon="rocket" href="/quickstart">
-    Install and run your first scan in minutes.
+  <Card title="快速开始" icon="rocket" href="/quickstart">
+    几分钟内完成安装并运行第一次扫描。
   </Card>
-  <Card title="CLI Reference" icon="terminal" href="/usage/cli">
-    Learn all command-line options.
+  <Card title="CLI 参考" icon="terminal" href="/usage/cli">
+    了解所有命令行选项。
   </Card>
-  <Card title="Tools" icon="wrench" href="/tools/overview">
-    Explore the security testing toolkit.
+  <Card title="工具" icon="wrench" href="/tools/overview">
+    探索安全测试工具包。
   </Card>
   <Card title="GitHub Actions" icon="github" href="/integrations/github-actions">
-    Integrate into your CI/CD pipeline.
+    集成到你的 CI/CD 流水线中。
   </Card>
 </CardGroup>
 
-## Use Cases
+## 使用场景
 
-- **Application Security Testing** — Detect and validate critical vulnerabilities in your applications
-- **Rapid Penetration Testing** — Get penetration tests done in hours, not weeks
-- **Bug Bounty Automation** — Automate research and generate PoCs for faster reporting
-- **CI/CD Integration** — Block vulnerabilities before they reach production
+- **应用安全测试** — 在你的应用中检测并验证关键漏洞
+- **快速渗透测试** — 几小时内完成渗透测试，而不是几周
+- **漏洞赏金自动化** — 自动化研究并生成概念验证，加快报告速度
+- **CI/CD 集成** — 在漏洞进入生产环境前将其阻止
 
-## Key Capabilities
+## 核心能力
 
-- **Full hacker toolkit** — Browser automation, HTTP proxy, terminal, Python runtime
-- **Real validation** — PoCs, not false positives
-- **Multi-agent orchestration** — Specialized agents collaborate on complex targets
-- **Developer-first CLI** — Interactive TUI or headless mode for automation
+- **完整攻击者工具箱** — 浏览器自动化、HTTP 代理、终端、Python 运行时
+- **真实验证** — 概念验证，而非误报
+- **多智能体编排** — 专门智能体协同处理复杂目标
+- **以开发者为中心的 CLI** — 用于自动化的交互式 TUI 或无头模式
 
-## Security Tools
+## 安全工具
 
-Strix agents come equipped with a comprehensive toolkit:
+Strix 智能体自带一整套综合工具箱：
 
-| Tool | Purpose |
+| 工具 | 用途 |
 |------|---------|
-| HTTP Proxy | Full request/response manipulation and analysis |
-| Browser Automation | Multi-tab browser for XSS, CSRF, auth flow testing |
-| Terminal | Interactive shells for command execution |
-| Python Runtime | Custom exploit development and validation |
-| Reconnaissance | Automated OSINT and attack surface mapping |
-| Code Analysis | Static and dynamic analysis capabilities |
+| HTTP 代理 | 完整的请求/响应操控与分析 |
+| 浏览器自动化 | 支持多标签页，适合 XSS、CSRF 和认证流程测试 |
+| 终端 | 用于命令执行的交互式 Shell |
+| Python 运行时 | 自定义利用代码开发与验证 |
+| 侦察 | 自动化 OSINT 和攻击面映射 |
+| 代码分析 | 静态与动态分析能力 |
 
-## Vulnerability Coverage
+## 漏洞覆盖范围
 
-| Category | Examples |
+| 类别 | 示例 |
 |----------|----------|
-| Access Control | IDOR, privilege escalation, auth bypass |
-| Injection | SQL, NoSQL, command injection |
-| Server-Side | SSRF, XXE, deserialization |
-| Client-Side | XSS, prototype pollution, DOM vulnerabilities |
-| Business Logic | Race conditions, workflow manipulation |
-| Authentication | JWT vulnerabilities, session management |
-| Infrastructure | Misconfigurations, exposed services |
+| 访问控制 | IDOR、权限提升、认证绕过 |
+| 注入 | SQL、NoSQL、命令注入 |
+| 服务端 | SSRF、XXE、反序列化 |
+| 客户端 | XSS、原型污染、DOM 漏洞 |
+| 业务逻辑 | 竞态条件、工作流操控 |
+| 认证 | JWT 漏洞、会话管理 |
+| 基础设施 | 配置错误、暴露服务 |
 
-## Multi-Agent Architecture
+## 多智能体架构
 
-Strix uses a graph of specialized agents for comprehensive security testing:
+Strix 通过专门智能体的图结构来完成全面安全测试：
 
-- **Distributed Workflows** — Specialized agents for different attacks and assets
-- **Scalable Testing** — Parallel execution for fast comprehensive coverage
-- **Dynamic Coordination** — Agents collaborate and share discoveries
+- **分布式工作流** — 针对不同攻击面和资产分工的专门智能体
+- **可扩展测试** — 并行执行，快速覆盖更多场景
+- **动态协同** — 智能体之间共享发现并协同推进
 
-## Quick Example
+## 快速示例
 
 ```bash
-# Install
+# 安装
 curl -sSL https://strix.ai/install | bash
 
-# Configure
+# 配置
 export STRIX_LLM="openai/gpt-5.4"
 export LLM_API_KEY="your-api-key"
 
-# Scan
+# 扫描
 strix --target ./your-app
 ```
 
-## Community
+## 社区
 
 <CardGroup cols={2}>
   <Card title="Discord" icon="discord" href="https://discord.gg/strix-ai">
-    Join the community for help and discussion.
+    加入社区以获取帮助和交流。
   </Card>
   <Card title="GitHub" icon="github" href="https://github.com/usestrix/strix">
-    Star the repo and contribute.
+    给仓库点星并参与贡献。
   </Card>
 </CardGroup>
 
 <Warning>
-Only test applications you own or have explicit permission to test.
+仅测试你拥有或明确获得授权测试的应用。
 </Warning>

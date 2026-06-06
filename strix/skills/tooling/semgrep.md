@@ -1,9 +1,9 @@
 ---
 name: semgrep
-description: Exact Semgrep CLI structure, metrics-off scanning, scoped ruleset selection, and automation-safe output patterns.
+description: Semgrep 静态分析工具的使用指南
 ---
 
-# Semgrep CLI Playbook
+# Semgrep 工具指南
 
 Official docs:
 - https://semgrep.dev/docs/cli-reference
